@@ -16,12 +16,17 @@ public class SecurityConfig {
             .cors().and()
             .csrf().disable()
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/files/**").permitAll() // Temporalmente público
-                .requestMatchers("/api/public/**").permitAll()
+                // Endpoints públicos
+                .requestMatchers("/api/test/**", "/api/files/**", "/public/**").permitAll()
+                // Todo lo demás requiere autenticación
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
                 .defaultSuccessUrl("/api/user/profile", true)
+                .failureUrl("/login?error=true")
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl("/public/logout-success")
             );
         
         return http.build();

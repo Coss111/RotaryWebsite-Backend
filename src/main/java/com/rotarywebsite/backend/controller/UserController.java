@@ -2,15 +2,14 @@ package com.rotarywebsite.backend.controller;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
+@CrossOrigin(origins = "*")
 public class UserController {
 
     @GetMapping("/profile")
@@ -19,7 +18,12 @@ public class UserController {
             return Collections.singletonMap("error", "User not authenticated");
         }
         
-        return Collections.singletonMap("name", principal.getAttribute("name"));
+        return Map.of(
+            "name", principal.getAttribute("name"),
+            "email", principal.getAttribute("email"),
+            "picture", principal.getAttribute("picture"),
+            "authenticated", true
+        );
     }
 
     @GetMapping("/info")
@@ -27,4 +31,13 @@ public class UserController {
         return principal != null ? principal.getAttributes() : 
             Collections.singletonMap("error", "Not authenticated");
     }
-}
+
+    // Endpoint público para verificar si el usuario está autenticado
+    @GetMapping("/status")
+    public Map<String, Object> authStatus(@AuthenticationPrincipal OAuth2User principal) {
+        return Map.of(
+            "authenticated", principal != null,
+            "user", principal != null ? principal.getAttribute("name") : null
+        );
+    }
+}   
