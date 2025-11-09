@@ -1,0 +1,11 @@
+[build]
+builder = "DOCKERFILE"
+
+[deploy]
+startCommand = "java -jar app.jar"
+
+[[services]]
+name = "web"
+[[services.ports]]
+port = 8080
+http = true
