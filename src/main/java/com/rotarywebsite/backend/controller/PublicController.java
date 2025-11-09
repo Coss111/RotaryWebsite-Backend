@@ -9,18 +9,29 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class PublicController {
 
-    @GetMapping("/health")
-    public Map<String, String> health() {
-        return Map.of("status", "OK", "message", "Backend funcionando");
+    // ... endpoints anteriores ...
+
+    @GetMapping("/auth-info")
+    public Map<String, String> authInfo() {
+        return Map.of(
+            "githubAuth", "/oauth2/authorization/github",
+            "loginUrl", "/oauth2/authorization/github",
+            "logoutUrl", "/logout"
+        );
     }
 
-    @GetMapping("/logout-success")
-    public Map<String, String> logoutSuccess() {
-        return Map.of("message", "Logout exitoso");
+    @GetMapping("/auth-error")
+    public Map<String, String> authError() {
+        return Map.of(
+            "error", "Authentication failed",
+            "message", "Hubo un problema con la autenticación"
+        );
     }
 
-    @GetMapping("/info")
-    public Map<String, String> info() {
-        return Map.of("app", "Rotary Website", "version", "1.0");
+    @GetMapping("/login-urls")
+    public Map<String, String> loginUrls() {
+        return Map.of(
+            "github", "/oauth2/authorization/github"
+        );
     }
 }

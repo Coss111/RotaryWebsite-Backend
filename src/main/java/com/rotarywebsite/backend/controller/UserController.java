@@ -15,29 +15,54 @@ public class UserController {
     @GetMapping("/profile")
     public Map<String, Object> userProfile(@AuthenticationPrincipal OAuth2User principal) {
         if (principal == null) {
-            return Collections.singletonMap("error", "User not authenticated");
+            return Map.of(
+                "authenticated", false,
+                "message", "Usuario no autenticado"
+            );
         }
         
+        // GitHub attributes
+        String name = principal.getAttribute("name");
+        String login = principal.getAttribute("login");
+        String email = principal.getAttribute("email");
+        String avatarUrl = principal.getAttribute("avatar_url");
+        String htmlUrl = principal.getAttribute("html_url");
+        
         return Map.of(
-            "name", principal.getAttribute("name"),
-            "email", principal.getAttribute("email"),
-            "picture", principal.getAttribute("picture"),
-            "authenticated", true
+            "authenticated", true,
+            "name", name != null ? name : login,
+            "username", login,
+            "email", email,
+            "avatarUrl", avatarUrl,
+            "profileUrl", htmlUrl,
+            "provider", "GitHub"
         );
     }
 
     @GetMapping("/info")
     public Map<String, Object> userInfo(@AuthenticationPrincipal OAuth2User principal) {
-        return principal != null ? principal.getAttributes() : 
-            Collections.singletonMap("error", "Not authenticated");
+        if (principal == null) {
+            return Map.of("authenticated", false);
+        }
+        return principal.getAttributes();
     }
 
-    // Endpoint público para verificar si el usuario está autenticado
     @GetMapping("/status")
     public Map<String, Object> authStatus(@AuthenticationPrincipal OAuth2User principal) {
-        return Map.of(
-            "authenticated", principal != null,
-            "user", principal != null ? principal.getAttribute("name") : null
+        boolean isAuthenticated = principal != null;
+        Map<String, Object> response = Map.of(
+            "authenticated", isAuthenticated,
+            "timestamp", System.currentTimeMillis()
         );
+        
+        if (isAuthenticated) {
+            return Map.of(
+                "authenticated", true,
+                "user", principal.getAttribute("login"),
+                "name", principal.getAttribute("name")
+            );
+        }
+        
+        return response;
     }
-}   
+}
