@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -16,8 +18,13 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${app.frontend-url:https://rotary-website-frontend.vercel.app}")
-    private String frontendUrl;
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -25,34 +32,29 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                // Endpoints públicos
-                .requestMatchers("/", "/public/**", "/api/test/**", "/api/files/**", "/error").permitAll()
-                // Endpoints de autenticación
-                .requestMatchers("/login**", "/oauth2/**").permitAll()
-                // Todo lo demás requiere autenticación
+                // Public endpoints
+                .requestMatchers("/", "/public/**", "/api/auth/**", "/error").permitAll()
+                .requestMatchers("/api/files/**").permitAll() // Temporary for development
+                
+                // Member endpoints
+                .requestMatchers("/api/members/**", "/api/projects/**", "/api/news/**").hasAnyRole("MEMBER", "ADMINISTRATOR")
+                
+                // Admin only endpoints
+                .requestMatchers("/api/users/**", "/api/reports/**").hasRole("ADMINISTRATOR")
+                
+                // Any authenticated user
                 .anyRequest().authenticated()
             )
-            .oauth2Login(oauth2 -> oauth2
-                .defaultSuccessUrl("/api/user/profile", true)
-                .failureUrl("/public/auth-error")
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl(frontendUrl)
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
-            );
-        
+            .formLogin(form -> form.disable()) // We'll use OAuth2/JWT
+            .httpBasic(httpBasic -> httpBasic.disable());
+
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-            frontendUrl,
-            "http://localhost:3000",
-            "https://rotary-website-frontend.vercel.app"
-        ));
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
