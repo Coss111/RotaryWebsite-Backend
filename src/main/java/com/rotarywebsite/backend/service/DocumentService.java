@@ -26,9 +26,9 @@ public class DocumentService {
     private NewsService noticiaService;
 
     // Guardar documento para proyecto
-    public Document guardarDocumentoProyecto(MultipartFile archivo, Long proyectoId, String descripcion) {
+    public Document saveProjectDocument(MultipartFile archivo, Long proyectoId, String descripcion) {
         try {
-            Project proyecto = proyectoService.obtenerPorId(proyectoId);
+            Project proyecto = proyectoService.getById(proyectoId);
             
             // Subir archivo a MinIO
             String fileName = fileStorageService.uploadFile(archivo);
@@ -50,9 +50,9 @@ public class DocumentService {
     }
 
     // Guardar documento para noticia
-    public Document guardarDocumentoNoticia(MultipartFile archivo, Long noticiaId, String descripcion) {
+    public Document saveNewsDocument(MultipartFile archivo, Long noticiaId, String descripcion) {
         try {
-            News noticia = noticiaService.obtenerPorId(noticiaId);
+            News noticia = noticiaService.getById(noticiaId);
             
             String fileName = fileStorageService.uploadFile(archivo);
             String fileUrl = fileStorageService.getFileUrl(fileName);
@@ -72,19 +72,19 @@ public class DocumentService {
     }
 
     // Obtener documentos por proyecto
-    public List<Document> obtenerPorProyecto(Long proyectoId) {
-        Project proyecto = proyectoService.obtenerPorId(proyectoId);
+    public List<Document> getByProject(Long proyectoId) {
+        Project proyecto = proyectoService.getById(proyectoId);
         return documentoRepository.findByProyecto(proyecto);
     }
 
     // Obtener documentos por noticia
-    public List<Document> obtenerPorNoticia(Long noticiaId) {
-        News noticia = noticiaService.obtenerPorId(noticiaId);
+    public List<Document> getByNews(Long noticiaId) {
+        News noticia = noticiaService.getById(noticiaId);
         return documentoRepository.findByNoticia(noticia);
     }
 
     // Eliminar documento
-    public void eliminarDocumento(Long documentoId) {
+    public void deleteDocument(Long documentoId) {
         Document documento = documentoRepository.findById(documentoId)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
         
@@ -100,7 +100,7 @@ public class DocumentService {
     }
 
     // Obtener documento por ID
-    public Document obtenerPorId(Long id) {
+    public Document getById(Long id) {
         return documentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
     }

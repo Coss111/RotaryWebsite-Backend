@@ -21,10 +21,10 @@ public class MemberService {
     private UserService usuarioService;
 
     // Crear nuevo miembro
-    public Member crearMiembro(String nombre, String telefono, String ocupacion, 
+    public Member createMember(String nombre, String telefono, String ocupacion, 
                                String email, String password) {
         // Crear usuario primero
-        User usuario = usuarioService.crearUsuario(email, password, com.rotarywebsite.backend.model.UserRole.MEMBER);
+        User usuario = usuarioService.createUser(email, password, com.rotarywebsite.backend.model.UserRole.MEMBER);
         
         // Crear miembro
         Member miembro = new Member(nombre, telefono, ocupacion, usuario);
@@ -32,27 +32,27 @@ public class MemberService {
     }
 
     // Obtener todos los miembros
-    public List<Member> obtenerTodos() {
+    public List<Member> getAll() {
         return miembroRepository.findAll();
     }
 
     // Obtener miembro por ID
-    public Optional<Member> obtenerPorId(Long id) {
+    public Optional<Member> getById(Long id) {
         return miembroRepository.findById(id);
     }
 
     // Buscar miembros por nombre
-    public List<Member> buscarPorNombre(String nombre) {
+    public List<Member> searchByName(String nombre) {
         return miembroRepository.findByNombreContainingIgnoreCase(nombre);
     }
 
     // Obtener miembros por estado de membresía
-    public List<Member> obtenerPorEstado(MembershipStatus estado) {
+    public List<Member> getByStatus(MembershipStatus estado) {
         return miembroRepository.findByEstadoMembresia(estado);
     }
 
     // Renovar membresía
-    public Member renovarMembresia(Long miembroId) {
+    public Member renewMembership(Long miembroId) {
         Member miembro = miembroRepository.findById(miembroId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
         
@@ -63,13 +63,13 @@ public class MemberService {
     }
 
     // Obtener miembros que necesitan renovación
-    public List<Member> obtenerParaRenovacion() {
+    public List<Member> getPendingRenewal() {
         LocalDate fechaLimite = LocalDate.now().plusDays(30);
         return miembroRepository.findByFechaRenovacionLessThan(fechaLimite);
     }
 
     // Contar miembros por estado
-    public long contarPorEstado(MembershipStatus estado) {
+    public long countByStatus(MembershipStatus estado) {
         return miembroRepository.countByEstadoMembresia(estado);
     }
 }

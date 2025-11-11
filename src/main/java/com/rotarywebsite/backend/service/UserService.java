@@ -21,7 +21,7 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     // Crear nuevo usuario
-    public User crearUsuario(String email, String password, UserRole rol) {
+    public User createUser(String email, String password, UserRole rol) {
         if (usuarioRepository.existsByEmail(email)) {
             throw new RuntimeException("El email ya está registrado");
         }
@@ -31,17 +31,17 @@ public class UserService {
     }
 
     // Obtener usuario por ID
-    public Optional<User> obtenerPorId(Long id) {
+    public Optional<User> getById(Long id) {
         return usuarioRepository.findById(id);
     }
 
     // Obtener usuario por email
-    public Optional<User> obtenerPorEmail(String email) {
+    public Optional<User> getByEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }
 
     // Actualizar último login
-    public void actualizarUltimoLogin(Long usuarioId) {
+    public void updateLastLogin(Long usuarioId) {
         User usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         usuario.setUltimoLogin(LocalDateTime.now());
@@ -49,12 +49,12 @@ public class UserService {
     }
 
     // Listar usuarios por rol
-    public List<User> listarPorRol(UserRole rol) {
+    public List<User> getByRole(UserRole rol) {
         return usuarioRepository.findByRol(rol);
     }
 
     // Cambiar estado de usuario
-    public User cambiarEstado(Long usuarioId, boolean activo) {
+    public User changeStatus(Long usuarioId, boolean activo) {
         User usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         usuario.setActivo(activo);

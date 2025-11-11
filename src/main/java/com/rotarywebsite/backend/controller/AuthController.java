@@ -1,5 +1,7 @@
 package com.rotarywebsite.backend.controller;
 
+import com.rotarywebsite.backend.dto.LoginRequest;
+import com.rotarywebsite.backend.dto.RegisterRequest;
 import com.rotarywebsite.backend.model.User;
 import com.rotarywebsite.backend.model.Member;
 import com.rotarywebsite.backend.service.UserService;
@@ -18,27 +20,27 @@ import java.util.Optional;
 public class AuthController {
 
     @Autowired
-    private UserService usuarioService;
+    private UserService userService;
 
     @Autowired
-    private MemberService miembroService;
+    private MemberService memberService;
 
-    // Endpoint para registro de nuevos miembros
-    @PostMapping("/registro")
-    public ResponseEntity<?> registrarMiembro(@RequestBody Map<String, String> request) {
+    // Endpoint para registro usando DTO
+    @PostMapping("/register")
+    public ResponseEntity<?> registerMember(@RequestBody RegisterRequest registerRequest) {
         try {
-            String nombre = request.get("nombre");
-            String telefono = request.get("telefono");
-            String ocupacion = request.get("ocupacion");
-            String email = request.get("email");
-            String password = request.get("password");
-
-            Member miembro = miembroService.crearMiembro(nombre, telefono, ocupacion, email, password);
+            Member member = memberService.createMember(
+                registerRequest.getName(),
+                registerRequest.getPhone(),
+                registerRequest.getOccupation(),
+                registerRequest.getEmail(),
+                registerRequest.getPassword()
+            );
 
             Map<String, Object> response = new HashMap<>();
-            response.put("mensaje", "Miembro registrado exitosamente");
-            response.put("miembroId", miembro.getId());
-            response.put("email", email);
+            response.put("message", "Member registered successfully");
+            response.put("memberId", member.getId());
+            response.put("email", registerRequest.getEmail());
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -46,30 +48,24 @@ public class AuthController {
         }
     }
 
-    // Endpoint para login (cuando tengas seguridad configurada)
+    // Endpoint para login usando DTO
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            String email = request.get("email");
-            String password = request.get("password");
-
-            Optional<User> usuarioOpt = usuarioService.obtenerPorEmail(email);
+            Optional<User> userOpt = userService.getByEmail(loginRequest.getEmail());
             
-            if (usuarioOpt.isEmpty()) {
-                return ResponseEntity.status(401).body(Map.of("error", "Credenciales inválidas"));
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
             }
 
-            User usuario = usuarioOpt.get();
-            
-            // Aquí iría la lógica de autenticación con Spring Security
-            // Por ahora solo simulamos login exitoso
-            usuarioService.actualizarUltimoLogin(usuario.getId());
+            User user = userOpt.get();
+            userService.updateLastLogin(user.getId());
 
             Map<String, Object> response = new HashMap<>();
-            response.put("mensaje", "Login exitoso");
-            response.put("usuarioId", usuario.getId());
-            response.put("email", usuario.getEmail());
-            response.put("rol", usuario.getRol());
+            response.put("message", "Login successful");
+            response.put("userId", user.getId());
+            response.put("email", user.getEmail());
+            response.put("role", user.getRol());
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -78,12 +74,12 @@ public class AuthController {
     }
 
     // Verificar si email está disponible
-    @GetMapping("/verificar-email")
-    public ResponseEntity<?> verificarEmail(@RequestParam String email) {
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String email) {
         try {
-            Optional<User> usuario = usuarioService.obtenerPorEmail(email);
+            Optional<User> user = userService.getByEmail(email);
             Map<String, Boolean> response = new HashMap<>();
-            response.put("disponible", usuario.isEmpty());
+            response.put("available", user.isEmpty());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

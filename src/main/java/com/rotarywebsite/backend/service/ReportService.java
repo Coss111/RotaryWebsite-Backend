@@ -26,13 +26,13 @@ public class ReportService {
     private MemberService miembrosService;
 
     // Generar reporte de membresías
-    public Report generarReporteMembresias(Long generadoPorId) {
-        Member generadoPor = miembroService.obtenerPorId(generadoPorId)
+    public Report generateMembershipReport(Long generadoPorId) {
+        Member generadoPor = miembroService.getById(generadoPorId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
         // Lógica para generar reporte
-        long totalMiembros = miembrosService.contarPorEstado(com.rotarywebsite.backend.model.MembershipStatus.ACTIVE);
-        long pendientesRenovacion = miembrosService.contarPorEstado(com.rotarywebsite.backend.model.MembershipStatus.PENDING_RENEWAL);
+        long totalMiembros = miembrosService.countByStatus(com.rotarywebsite.backend.model.MembershipStatus.ACTIVE);
+        long pendientesRenovacion = miembrosService.countByStatus(com.rotarywebsite.backend.model.MembershipStatus.PENDING_RENEWAL);
 
         String contenido = String.format(
             "{\"totalMiembros\": %d, \"pendientesRenovacion\": %d, \"fechaGeneracion\": \"%s\"}",
@@ -46,8 +46,8 @@ public class ReportService {
     }
 
     // Generar reporte de proyectos
-    public Report generarReporteProyectos(Long generadoPorId) {
-        Member generadoPor = miembroService.obtenerPorId(generadoPorId)
+    public Report generateProjectReport(Long generadoPorId) {
+        Member generadoPor = miembroService.getById(generadoPorId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
         // Aquí iría la lógica para generar el reporte de proyectos
@@ -60,29 +60,29 @@ public class ReportService {
     }
 
     // Obtener todos los reportes
-    public List<Report> obtenerTodos() {
+    public List<Report> getAll() {
         return reporteRepository.findAll();
     }
 
     // Obtener reporte por ID
-    public Report obtenerPorId(Long id) {
+    public Report getById(Long id) {
         return reporteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
     }
 
     // Obtener reportes por tipo
-    public List<Report> obtenerPorTipo(ReportType tipo) {
+    public List<Report> getByType(ReportType tipo) {
         return reporteRepository.findByTipo(tipo);
     }
 
     // Obtener últimos reportes
-    public List<Report> obtenerUltimosReportes() {
+    public List<Report> getLatestReports() {
         return reporteRepository.findTop5ByOrderByFechaGeneracionDesc();
     }
 
     // Eliminar reporte
-    public void eliminarReporte(Long reporteId) {
-        Report reporte = obtenerPorId(reporteId);
+    public void deleteReport(Long reporteId) {
+        Report reporte = getById(reporteId);
         reporteRepository.delete(reporte);
     }
 }

@@ -19,8 +19,8 @@ public class ProjectService {
     private MemberService miembroService;
 
     // Crear nuevo proyecto
-    public Project crearProyecto(String nombre, String descripcion, Long creadorId) {
-        Member creador = miembroService.obtenerPorId(creadorId)
+    public Project createProject(String nombre, String descripcion, Long creadorId) {
+        Member creador = miembroService.getById(creadorId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
         Project proyecto = new Project(nombre, descripcion, creador);
@@ -28,35 +28,35 @@ public class ProjectService {
     }
 
     // Obtener todos los proyectos
-    public List<Project> obtenerTodos() {
+    public List<Project> getAll() {
         return proyectoRepository.findAll();
     }
 
     // Obtener proyecto por ID
-    public Project obtenerPorId(Long id) {
+    public Project getById(Long id) {
         return proyectoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
     }
 
     // Buscar proyectos por nombre
-    public List<Project> buscarPorNombre(String nombre) {
+    public List<Project> searchByName(String nombre) {
         return proyectoRepository.findByNombreContainingIgnoreCase(nombre);
     }
 
     // Obtener proyectos por estado
-    public List<Project> obtenerPorEstado(ProjectStatus estado) {
+    public List<Project> getByStatus(ProjectStatus estado) {
         return proyectoRepository.findByEstado(estado);
     }
 
     // Cambiar estado de proyecto
-    public Project cambiarEstado(Long proyectoId, ProjectStatus nuevoEstado) {
-        Project proyecto = obtenerPorId(proyectoId);
+    public Project changeStatus(Long proyectoId, ProjectStatus nuevoEstado) {
+        Project proyecto = getById(proyectoId);
         proyecto.setEstado(nuevoEstado);
         return proyectoRepository.save(proyecto);
     }
 
     // Obtener proyectos activos
-    public List<Project> obtenerProyectosActivos() {
+    public List<Project> getActiveProjects() {
         List<ProjectStatus> estadosInactivos = List.of(
             ProjectStatus.COMPLETED, 
             ProjectStatus.CANCELLED
@@ -65,8 +65,8 @@ public class ProjectService {
     }
 
     // Actualizar proyecto
-    public Project actualizarProyecto(Long proyectoId, Project proyectoActualizado) {
-        Project proyecto = obtenerPorId(proyectoId);
+    public Project updateProject(Long proyectoId, Project proyectoActualizado) {
+        Project proyecto = getById(proyectoId);
         
         proyecto.setNombre(proyectoActualizado.getNombre());
         proyecto.setDescripcion(proyectoActualizado.getDescripcion());
@@ -78,7 +78,7 @@ public class ProjectService {
     }
 
     // Contar proyectos por estado
-    public long contarPorEstado(ProjectStatus estado) {
+    public long countByStatus(ProjectStatus estado) {
         return proyectoRepository.countByEstado(estado);
     }
 }
