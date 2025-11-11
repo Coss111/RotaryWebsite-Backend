@@ -21,7 +21,7 @@ public class UserController {
     // Obtener todos los usuarios (solo admin)
     @GetMapping
     public ResponseEntity<List<User>> obtenerTodos() {
-        List<User> usuarios = usuarioService.listarPorRol(com.rotarywebsite.backend.model.UserRole.MEMBER);
+        List<User> usuarios = usuarioService.getByRole(com.rotarywebsite.backend.model.UserRole.MEMBER);
         return ResponseEntity.ok(usuarios);
     }
 
@@ -29,7 +29,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         try {
-            Optional<User> usuario = usuarioService.obtenerPorId(id);
+            Optional<User> usuario = usuarioService.getById(id);
             if (usuario.isPresent()) {
                 return ResponseEntity.ok(usuario.get());
             } else {
@@ -45,7 +45,7 @@ public class UserController {
     public ResponseEntity<?> cambiarEstado(@PathVariable Long id, @RequestBody Map<String, Boolean> request) {
         try {
             Boolean activo = request.get("activo");
-            User usuario = usuarioService.cambiarEstado(id, activo);
+            User usuario = usuarioService.changeStatus(id, activo);
             return ResponseEntity.ok(usuario);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -56,7 +56,7 @@ public class UserController {
     @GetMapping("/email/{email}")
     public ResponseEntity<?> obtenerPorEmail(@PathVariable String email) {
         try {
-            Optional<User> usuario = usuarioService.obtenerPorEmail(email);
+            Optional<User> usuario = usuarioService.getByEmail(email);
             if (usuario.isPresent()) {
                 return ResponseEntity.ok(usuario.get());
             } else {

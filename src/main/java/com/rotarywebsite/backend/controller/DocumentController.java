@@ -25,7 +25,7 @@ public class DocumentController {
             @RequestParam("archivo") MultipartFile archivo,
             @RequestParam(value = "descripcion", required = false) String descripcion) {
         try {
-            Document documento = documentoService.guardarDocumentoProyecto(archivo, proyectoId, descripcion);
+            Document documento = documentoService.saveProjectDocument(archivo, proyectoId, descripcion);
             return ResponseEntity.ok(documento);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -39,7 +39,7 @@ public class DocumentController {
             @RequestParam("archivo") MultipartFile archivo,
             @RequestParam(value = "descripcion", required = false) String descripcion) {
         try {
-            Document documento = documentoService.guardarDocumentoNoticia(archivo, noticiaId, descripcion);
+            Document documento = documentoService.saveNewsDocument(archivo, noticiaId, descripcion);
             return ResponseEntity.ok(documento);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -50,7 +50,7 @@ public class DocumentController {
     @GetMapping("/proyecto/{proyectoId}")
     public ResponseEntity<List<Document>> obtenerPorProyecto(@PathVariable Long proyectoId) {
         try {
-            List<Document> documentos = documentoService.obtenerPorProyecto(proyectoId);
+            List<Document> documentos = documentoService.getByProject(proyectoId);
             return ResponseEntity.ok(documentos);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -61,7 +61,7 @@ public class DocumentController {
     @GetMapping("/noticia/{noticiaId}")
     public ResponseEntity<List<Document>> obtenerPorNoticia(@PathVariable Long noticiaId) {
         try {
-            List<Document> documentos = documentoService.obtenerPorNoticia(noticiaId);
+            List<Document> documentos = documentoService.getByNews(noticiaId);
             return ResponseEntity.ok(documentos);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -72,7 +72,7 @@ public class DocumentController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarDocumento(@PathVariable Long id) {
         try {
-            documentoService.eliminarDocumento(id);
+            documentoService.deleteDocument(id);
             return ResponseEntity.ok(Map.of("mensaje", "Documento eliminado exitosamente"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -83,7 +83,7 @@ public class DocumentController {
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         try {
-            Document documento = documentoService.obtenerPorId(id);
+            Document documento = documentoService.getById(id);
             return ResponseEntity.ok(documento);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

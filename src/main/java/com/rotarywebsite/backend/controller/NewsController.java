@@ -20,14 +20,14 @@ public class NewsController {
     // Obtener todas las noticias
     @GetMapping
     public ResponseEntity<List<News>> obtenerTodas() {
-        List<News> noticias = noticiaService.obtenerTodas();
+        List<News> noticias = noticiaService.getAll();
         return ResponseEntity.ok(noticias);
     }
 
     // Obtener últimas noticias
     @GetMapping("/ultimas")
     public ResponseEntity<List<News>> obtenerUltimas() {
-        List<News> noticias = noticiaService.obtenerUltimasNoticias();
+        List<News> noticias = noticiaService.getLatestNews();
         return ResponseEntity.ok(noticias);
     }
 
@@ -35,7 +35,7 @@ public class NewsController {
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         try {
-            News noticia = noticiaService.obtenerPorId(id);
+            News noticia = noticiaService.getById(id);
             return ResponseEntity.ok(noticia);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -56,7 +56,7 @@ public class NewsController {
             String porQue = (String) request.get("porQue");
             String como = (String) request.get("como");
 
-            News noticia = noticiaService.crearNoticia(
+            News noticia = noticiaService.createNews(
                 titulo, lead, contenido, autorId, que, cuando, donde, porQue, como
             );
             return ResponseEntity.ok(noticia);
@@ -69,7 +69,7 @@ public class NewsController {
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizarNoticia(@PathVariable Long id, @RequestBody News noticiaActualizada) {
         try {
-            News noticia = noticiaService.actualizarNoticia(id, noticiaActualizada);
+            News noticia = noticiaService.updateNews(id, noticiaActualizada);
             return ResponseEntity.ok(noticia);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -80,7 +80,7 @@ public class NewsController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarNoticia(@PathVariable Long id) {
         try {
-            noticiaService.eliminarNoticia(id);
+            noticiaService.deleteNews(id);
             return ResponseEntity.ok(Map.of("mensaje", "Noticia eliminada exitosamente"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -90,7 +90,7 @@ public class NewsController {
     // Buscar noticias por título
     @GetMapping("/buscar")
     public ResponseEntity<List<News>> buscarPorTitulo(@RequestParam String titulo) {
-        List<News> noticias = noticiaService.buscarPorTitulo(titulo);
+        List<News> noticias = noticiaService.searchByTitle(titulo);
         return ResponseEntity.ok(noticias);
     }
 }
