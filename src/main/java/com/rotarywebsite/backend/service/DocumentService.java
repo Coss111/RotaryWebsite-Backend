@@ -1,9 +1,9 @@
 package com.rotarywebsite.backend.service;
 
-import com.rotarywebsite.backend.model.Documento;
-import com.rotarywebsite.backend.model.Proyecto;
-import com.rotarywebsite.backend.model.Noticia;
-import com.rotarywebsite.backend.repository.DocumentoRepository;
+import com.rotarywebsite.backend.model.Document;
+import com.rotarywebsite.backend.model.Project;
+import com.rotarywebsite.backend.model.News;
+import com.rotarywebsite.backend.repository.DocumentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,31 +11,31 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @Service
-public class DocumentoService {
+public class DocumentService {
 
     @Autowired
-    private DocumentoRepository documentoRepository;
+    private DocumentRepository documentoRepository;
 
     @Autowired
     private FileStorageService fileStorageService;
 
     @Autowired
-    private ProyectoService proyectoService;
+    private ProjectService proyectoService;
 
     @Autowired
-    private NoticiaService noticiaService;
+    private NewsService noticiaService;
 
     // Guardar documento para proyecto
-    public Documento guardarDocumentoProyecto(MultipartFile archivo, Long proyectoId, String descripcion) {
+    public Document guardarDocumentoProyecto(MultipartFile archivo, Long proyectoId, String descripcion) {
         try {
-            Proyecto proyecto = proyectoService.obtenerPorId(proyectoId);
+            Project proyecto = proyectoService.obtenerPorId(proyectoId);
             
             // Subir archivo a MinIO
             String fileName = fileStorageService.uploadFile(archivo);
             String fileUrl = fileStorageService.getFileUrl(fileName);
 
             // Crear documento en BD
-            Documento documento = new Documento(
+            Document documento = new Document(
                 archivo.getOriginalFilename(), 
                 fileUrl, 
                 archivo.getContentType()
@@ -50,14 +50,14 @@ public class DocumentoService {
     }
 
     // Guardar documento para noticia
-    public Documento guardarDocumentoNoticia(MultipartFile archivo, Long noticiaId, String descripcion) {
+    public Document guardarDocumentoNoticia(MultipartFile archivo, Long noticiaId, String descripcion) {
         try {
-            Noticia noticia = noticiaService.obtenerPorId(noticiaId);
+            News noticia = noticiaService.obtenerPorId(noticiaId);
             
             String fileName = fileStorageService.uploadFile(archivo);
             String fileUrl = fileStorageService.getFileUrl(fileName);
 
-            Documento documento = new Documento(
+            Document documento = new Document(
                 archivo.getOriginalFilename(), 
                 fileUrl, 
                 archivo.getContentType()
@@ -72,20 +72,20 @@ public class DocumentoService {
     }
 
     // Obtener documentos por proyecto
-    public List<Documento> obtenerPorProyecto(Long proyectoId) {
-        Proyecto proyecto = proyectoService.obtenerPorId(proyectoId);
+    public List<Document> obtenerPorProyecto(Long proyectoId) {
+        Project proyecto = proyectoService.obtenerPorId(proyectoId);
         return documentoRepository.findByProyecto(proyecto);
     }
 
     // Obtener documentos por noticia
-    public List<Documento> obtenerPorNoticia(Long noticiaId) {
-        Noticia noticia = noticiaService.obtenerPorId(noticiaId);
+    public List<Document> obtenerPorNoticia(Long noticiaId) {
+        News noticia = noticiaService.obtenerPorId(noticiaId);
         return documentoRepository.findByNoticia(noticia);
     }
 
     // Eliminar documento
     public void eliminarDocumento(Long documentoId) {
-        Documento documento = documentoRepository.findById(documentoId)
+        Document documento = documentoRepository.findById(documentoId)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
         
         // Eliminar de MinIO
@@ -100,7 +100,7 @@ public class DocumentoService {
     }
 
     // Obtener documento por ID
-    public Documento obtenerPorId(Long id) {
+    public Document obtenerPorId(Long id) {
         return documentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
     }

@@ -1,9 +1,9 @@
 package com.rotarywebsite.backend.controller;
 
-import com.rotarywebsite.backend.model.Usuario;
-import com.rotarywebsite.backend.model.Miembro;
-import com.rotarywebsite.backend.service.UsuarioService;
-import com.rotarywebsite.backend.service.MiembroService;
+import com.rotarywebsite.backend.model.User;
+import com.rotarywebsite.backend.model.Member;
+import com.rotarywebsite.backend.service.UserService;
+import com.rotarywebsite.backend.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +18,10 @@ import java.util.Optional;
 public class AuthController {
 
     @Autowired
-    private UsuarioService usuarioService;
+    private UserService usuarioService;
 
     @Autowired
-    private MiembroService miembroService;
+    private MemberService miembroService;
 
     // Endpoint para registro de nuevos miembros
     @PostMapping("/registro")
@@ -33,7 +33,7 @@ public class AuthController {
             String email = request.get("email");
             String password = request.get("password");
 
-            Miembro miembro = miembroService.crearMiembro(nombre, telefono, ocupacion, email, password);
+            Member miembro = miembroService.crearMiembro(nombre, telefono, ocupacion, email, password);
 
             Map<String, Object> response = new HashMap<>();
             response.put("mensaje", "Miembro registrado exitosamente");
@@ -53,13 +53,13 @@ public class AuthController {
             String email = request.get("email");
             String password = request.get("password");
 
-            Optional<Usuario> usuarioOpt = usuarioService.obtenerPorEmail(email);
+            Optional<User> usuarioOpt = usuarioService.obtenerPorEmail(email);
             
             if (usuarioOpt.isEmpty()) {
                 return ResponseEntity.status(401).body(Map.of("error", "Credenciales inválidas"));
             }
 
-            Usuario usuario = usuarioOpt.get();
+            User usuario = usuarioOpt.get();
             
             // Aquí iría la lógica de autenticación con Spring Security
             // Por ahora solo simulamos login exitoso
@@ -81,7 +81,7 @@ public class AuthController {
     @GetMapping("/verificar-email")
     public ResponseEntity<?> verificarEmail(@RequestParam String email) {
         try {
-            Optional<Usuario> usuario = usuarioService.obtenerPorEmail(email);
+            Optional<User> usuario = usuarioService.obtenerPorEmail(email);
             Map<String, Boolean> response = new HashMap<>();
             response.put("disponible", usuario.isEmpty());
             return ResponseEntity.ok(response);

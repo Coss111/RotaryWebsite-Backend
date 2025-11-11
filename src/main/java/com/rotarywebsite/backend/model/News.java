@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "noticias")
-public class Noticia {
+public class News {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,16 +32,16 @@ public class Noticia {
     // Relación con Miembro (autor)
     @ManyToOne
     @JoinColumn(name = "autor_id")
-    private Miembro autor;
+    private Member autor;
     
     // Documentos/fotos de la noticia
     @OneToMany(mappedBy = "noticia", cascade = CascadeType.ALL)
-    private List<Documento> documentos = new ArrayList<>();
+    private List<Document> documentos = new ArrayList<>();
     
     // CONSTRUCTORES
-    public Noticia() {}
+    public News() {}
     
-    public Noticia(String titulo, String lead, Miembro autor) {
+    public News(String titulo, String lead, Member autor) {
         this.titulo = titulo;
         this.lead = lead;
         this.autor = autor;
@@ -79,9 +79,9 @@ public class Noticia {
     public String getComo() { return como; }
     public void setComo(String como) { this.como = como; }
     
-    public Miembro getAutor() { return autor; }
-    public void setAutor(Miembro autor) { this.autor = autor; }
+    public Member getAutor() { return autor; }
+    public void setAutor(Member autor) { this.autor = autor; }
     
-    public List<Documento> getDocumentos() { return documentos; }
-    public void setDocumentos(List<Documento> documentos) { this.documentos = documentos; }
+    public List<Document> getDocumentos() { return documentos; }
+    public void setDocumentos(List<Document> documentos) { this.documentos = documentos; }
 }

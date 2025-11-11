@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "miembros")
-public class Miembro {
+public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,7 +16,7 @@ public class Miembro {
     private String direccion;
     
     @Enumerated(EnumType.STRING)
-    private EstadoMembresia estadoMembresia = EstadoMembresia.ACTIVO;
+    private MembershipStatus estadoMembresia = MembershipStatus.ACTIVE;
     
     private LocalDate fechaIngreso;
     private LocalDate fechaRenovacion;
@@ -24,12 +24,12 @@ public class Miembro {
     // Relación con Usuario
     @OneToOne
     @JoinColumn(name = "usuario_id")
-    private Usuario usuario;
+    private User usuario;
     
     // CONSTRUCTORES
-    public Miembro() {}
+    public Member() {}
     
-    public Miembro(String nombre, String telefono, String ocupacion, Usuario usuario) {
+    public Member(String nombre, String telefono, String ocupacion, User usuario) {
         this.nombre = nombre;
         this.telefono = telefono;
         this.ocupacion = ocupacion;
@@ -54,8 +54,8 @@ public class Miembro {
     public String getDireccion() { return direccion; }
     public void setDireccion(String direccion) { this.direccion = direccion; }
     
-    public EstadoMembresia getEstadoMembresia() { return estadoMembresia; }
-    public void setEstadoMembresia(EstadoMembresia estadoMembresia) { this.estadoMembresia = estadoMembresia; }
+    public MembershipStatus getEstadoMembresia() { return estadoMembresia; }
+    public void setEstadoMembresia(MembershipStatus estadoMembresia) { this.estadoMembresia = estadoMembresia; }
     
     public LocalDate getFechaIngreso() { return fechaIngreso; }
     public void setFechaIngreso(LocalDate fechaIngreso) { this.fechaIngreso = fechaIngreso; }
@@ -63,6 +63,6 @@ public class Miembro {
     public LocalDate getFechaRenovacion() { return fechaRenovacion; }
     public void setFechaRenovacion(LocalDate fechaRenovacion) { this.fechaRenovacion = fechaRenovacion; }
     
-    public Usuario getUsuario() { return usuario; }
-    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+    public User getUsuario() { return usuario; }
+    public void setUsuario(User usuario) { this.usuario = usuario; }
 }

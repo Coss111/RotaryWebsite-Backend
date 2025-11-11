@@ -1,9 +1,9 @@
 package com.rotarywebsite.backend.service;
 
-import com.rotarywebsite.backend.model.Reporte;
-import com.rotarywebsite.backend.model.Miembro;
-import com.rotarywebsite.backend.model.TipoReporte;
-import com.rotarywebsite.backend.repository.ReporteRepository;
+import com.rotarywebsite.backend.model.Report;
+import com.rotarywebsite.backend.model.Member;
+import com.rotarywebsite.backend.model.ReportType;
+import com.rotarywebsite.backend.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,78 +11,78 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class ReporteService {
+public class ReportService {
 
     @Autowired
-    private ReporteRepository reporteRepository;
+    private ReportRepository reporteRepository;
 
     @Autowired
-    private MiembroService miembroService;
+    private MemberService miembroService;
 
     @Autowired
-    private ProyectoService proyectoService;
+    private ProjectService proyectoService;
 
     @Autowired
-    private MiembroService miembrosService;
+    private MemberService miembrosService;
 
     // Generar reporte de membresías
-    public Reporte generarReporteMembresias(Long generadoPorId) {
-        Miembro generadoPor = miembroService.obtenerPorId(generadoPorId)
+    public Report generarReporteMembresias(Long generadoPorId) {
+        Member generadoPor = miembroService.obtenerPorId(generadoPorId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
         // Lógica para generar reporte
-        long totalMiembros = miembrosService.contarPorEstado(com.rotarywebsite.backend.model.EstadoMembresia.ACTIVO);
-        long pendientesRenovacion = miembrosService.contarPorEstado(com.rotarywebsite.backend.model.EstadoMembresia.PENDIENTE_RENOVACION);
+        long totalMiembros = miembrosService.contarPorEstado(com.rotarywebsite.backend.model.MembershipStatus.ACTIVE);
+        long pendientesRenovacion = miembrosService.contarPorEstado(com.rotarywebsite.backend.model.MembershipStatus.PENDING_RENEWAL);
 
         String contenido = String.format(
             "{\"totalMiembros\": %d, \"pendientesRenovacion\": %d, \"fechaGeneracion\": \"%s\"}",
             totalMiembros, pendientesRenovacion, LocalDateTime.now()
         );
 
-        Reporte reporte = new Reporte("Reporte de Membresías", TipoReporte.MEMBRESIAS, generadoPor);
+        Report reporte = new Report("Reporte de Membresías", ReportType.MEMBERSHIPS, generadoPor);
         reporte.setContenido(contenido);
 
         return reporteRepository.save(reporte);
     }
 
     // Generar reporte de proyectos
-    public Reporte generarReporteProyectos(Long generadoPorId) {
-        Miembro generadoPor = miembroService.obtenerPorId(generadoPorId)
+    public Report generarReporteProyectos(Long generadoPorId) {
+        Member generadoPor = miembroService.obtenerPorId(generadoPorId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
         // Aquí iría la lógica para generar el reporte de proyectos
         String contenido = "{\"reporte\": \"Proyectos en ejecución\", \"detalles\": \"...\"}";
 
-        Reporte reporte = new Reporte("Reporte de Proyectos", TipoReporte.PROYECTOS, generadoPor);
+        Report reporte = new Report("Reporte de Proyectos", ReportType.PROJECTS, generadoPor);
         reporte.setContenido(contenido);
 
         return reporteRepository.save(reporte);
     }
 
     // Obtener todos los reportes
-    public List<Reporte> obtenerTodos() {
+    public List<Report> obtenerTodos() {
         return reporteRepository.findAll();
     }
 
     // Obtener reporte por ID
-    public Reporte obtenerPorId(Long id) {
+    public Report obtenerPorId(Long id) {
         return reporteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
     }
 
     // Obtener reportes por tipo
-    public List<Reporte> obtenerPorTipo(TipoReporte tipo) {
+    public List<Report> obtenerPorTipo(ReportType tipo) {
         return reporteRepository.findByTipo(tipo);
     }
 
     // Obtener últimos reportes
-    public List<Reporte> obtenerUltimosReportes() {
+    public List<Report> obtenerUltimosReportes() {
         return reporteRepository.findTop5ByOrderByFechaGeneracionDesc();
     }
 
     // Eliminar reporte
     public void eliminarReporte(Long reporteId) {
-        Reporte reporte = obtenerPorId(reporteId);
+        Report reporte = obtenerPorId(reporteId);
         reporteRepository.delete(reporte);
     }
 }

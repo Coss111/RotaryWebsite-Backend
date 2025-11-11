@@ -1,7 +1,7 @@
 package com.rotarywebsite.backend.controller;
 
-import com.rotarywebsite.backend.model.Proyecto;
-import com.rotarywebsite.backend.service.ProyectoService;
+import com.rotarywebsite.backend.model.Project;
+import com.rotarywebsite.backend.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,15 +12,15 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/proyectos")
 @CrossOrigin(origins = "*")
-public class ProyectoController {
+public class ProjectController {
 
     @Autowired
-    private ProyectoService proyectoService;
+    private ProjectService proyectoService;
 
     // Obtener todos los proyectos
     @GetMapping
-    public ResponseEntity<List<Proyecto>> obtenerTodos() {
-        List<Proyecto> proyectos = proyectoService.obtenerTodos();
+    public ResponseEntity<List<Project>> obtenerTodos() {
+        List<Project> proyectos = proyectoService.obtenerTodos();
         return ResponseEntity.ok(proyectos);
     }
 
@@ -28,7 +28,7 @@ public class ProyectoController {
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         try {
-            Proyecto proyecto = proyectoService.obtenerPorId(id);
+            Project proyecto = proyectoService.obtenerPorId(id);
             return ResponseEntity.ok(proyecto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -43,7 +43,7 @@ public class ProyectoController {
             String descripcion = (String) request.get("descripcion");
             Long creadorId = Long.valueOf(request.get("creadorId").toString());
 
-            Proyecto proyecto = proyectoService.crearProyecto(nombre, descripcion, creadorId);
+            Project proyecto = proyectoService.crearProyecto(nombre, descripcion, creadorId);
             return ResponseEntity.ok(proyecto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -52,9 +52,9 @@ public class ProyectoController {
 
     // Actualizar proyecto
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarProyecto(@PathVariable Long id, @RequestBody Proyecto proyectoActualizado) {
+    public ResponseEntity<?> actualizarProyecto(@PathVariable Long id, @RequestBody Project proyectoActualizado) {
         try {
-            Proyecto proyecto = proyectoService.actualizarProyecto(id, proyectoActualizado);
+            Project proyecto = proyectoService.actualizarProyecto(id, proyectoActualizado);
             return ResponseEntity.ok(proyecto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -66,10 +66,10 @@ public class ProyectoController {
     public ResponseEntity<?> cambiarEstado(@PathVariable Long id, @RequestBody Map<String, String> request) {
         try {
             String estadoStr = request.get("estado");
-            com.rotarywebsite.backend.model.EstadoProyecto estado = 
-                com.rotarywebsite.backend.model.EstadoProyecto.valueOf(estadoStr);
+            com.rotarywebsite.backend.model.ProjectStatus estado = 
+                com.rotarywebsite.backend.model.ProjectStatus.valueOf(estadoStr);
             
-            Proyecto proyecto = proyectoService.cambiarEstado(id, estado);
+            Project proyecto = proyectoService.cambiarEstado(id, estado);
             return ResponseEntity.ok(proyecto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -78,15 +78,15 @@ public class ProyectoController {
 
     // Buscar proyectos por nombre
     @GetMapping("/buscar")
-    public ResponseEntity<List<Proyecto>> buscarPorNombre(@RequestParam String nombre) {
-        List<Proyecto> proyectos = proyectoService.buscarPorNombre(nombre);
+    public ResponseEntity<List<Project>> buscarPorNombre(@RequestParam String nombre) {
+        List<Project> proyectos = proyectoService.buscarPorNombre(nombre);
         return ResponseEntity.ok(proyectos);
     }
 
     // Obtener proyectos activos
     @GetMapping("/activos")
-    public ResponseEntity<List<Proyecto>> obtenerProyectosActivos() {
-        List<Proyecto> proyectos = proyectoService.obtenerProyectosActivos();
+    public ResponseEntity<List<Project>> obtenerProyectosActivos() {
+        List<Project> proyectos = proyectoService.obtenerProyectosActivos();
         return ResponseEntity.ok(proyectos);
     }
 
@@ -94,9 +94,9 @@ public class ProyectoController {
     @GetMapping("/estadisticas")
     public ResponseEntity<Map<String, Long>> obtenerEstadisticas() {
         Map<String, Long> estadisticas = Map.of(
-            "planificacion", proyectoService.contarPorEstado(com.rotarywebsite.backend.model.EstadoProyecto.PLANIFICACION),
-            "enProgreso", proyectoService.contarPorEstado(com.rotarywebsite.backend.model.EstadoProyecto.EN_PROGRESO),
-            "completados", proyectoService.contarPorEstado(com.rotarywebsite.backend.model.EstadoProyecto.COMPLETADO)
+            "planificacion", proyectoService.contarPorEstado(com.rotarywebsite.backend.model.ProjectStatus.PLANNING),
+            "enProgreso", proyectoService.contarPorEstado(com.rotarywebsite.backend.model.ProjectStatus.IN_PROGRESS),
+            "completados", proyectoService.contarPorEstado(com.rotarywebsite.backend.model.ProjectStatus.COMPLETED)
         );
         return ResponseEntity.ok(estadisticas);
     }

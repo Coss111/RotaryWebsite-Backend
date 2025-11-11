@@ -1,8 +1,8 @@
 package com.rotarywebsite.backend.service;
 
-import com.rotarywebsite.backend.model.Noticia;
-import com.rotarywebsite.backend.model.Miembro;
-import com.rotarywebsite.backend.repository.NoticiaRepository;
+import com.rotarywebsite.backend.model.News;
+import com.rotarywebsite.backend.model.Member;
+import com.rotarywebsite.backend.repository.NewsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,22 +10,22 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class NoticiaService {
+public class NewsService {
 
     @Autowired
-    private NoticiaRepository noticiaRepository;
+    private NewsRepository noticiaRepository;
 
     @Autowired
-    private MiembroService miembroService;
+    private MemberService miembroService;
 
     // Crear nueva noticia
-    public Noticia crearNoticia(String titulo, String lead, String contenido, 
+    public News crearNoticia(String titulo, String lead, String contenido, 
                                Long autorId, String que, String cuando, 
                                String donde, String porQue, String como) {
-        Miembro autor = miembroService.obtenerPorId(autorId)
+        Member autor = miembroService.obtenerPorId(autorId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
-        Noticia noticia = new Noticia(titulo, lead, autor);
+        News noticia = new News(titulo, lead, autor);
         noticia.setContenido(contenido);
         noticia.setQue(que);
         noticia.setCuando(cuando);
@@ -37,39 +37,39 @@ public class NoticiaService {
     }
 
     // Obtener todas las noticias
-    public List<Noticia> obtenerTodas() {
+    public List<News> obtenerTodas() {
         return noticiaRepository.findAll();
     }
 
     // Obtener noticia por ID
-    public Noticia obtenerPorId(Long id) {
+    public News obtenerPorId(Long id) {
         return noticiaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Noticia no encontrada"));
     }
 
     // Obtener últimas noticias
-    public List<Noticia> obtenerUltimasNoticias() {
+    public List<News> obtenerUltimasNoticias() {
         return noticiaRepository.findTop10ByOrderByFechaPublicacionDesc();
     }
 
     // Buscar noticias por título
-    public List<Noticia> buscarPorTitulo(String titulo) {
+    public List<News> buscarPorTitulo(String titulo) {
         return noticiaRepository.findByTituloContainingIgnoreCase(titulo);
     }
 
     // Buscar noticias por contenido
-    public List<Noticia> buscarPorContenido(String texto) {
+    public List<News> buscarPorContenido(String texto) {
         return noticiaRepository.findByLeadContainingIgnoreCase(texto);
     }
 
     // Obtener noticias por fecha
-    public List<Noticia> obtenerPorFecha(LocalDate fecha) {
+    public List<News> obtenerPorFecha(LocalDate fecha) {
         return noticiaRepository.findByFechaPublicacion(fecha);
     }
 
     // Actualizar noticia
-    public Noticia actualizarNoticia(Long noticiaId, Noticia noticiaActualizada) {
-        Noticia noticia = obtenerPorId(noticiaId);
+    public News actualizarNoticia(Long noticiaId, News noticiaActualizada) {
+        News noticia = obtenerPorId(noticiaId);
         
         noticia.setTitulo(noticiaActualizada.getTitulo());
         noticia.setLead(noticiaActualizada.getLead());
@@ -85,7 +85,7 @@ public class NoticiaService {
 
     // Eliminar noticia
     public void eliminarNoticia(Long noticiaId) {
-        Noticia noticia = obtenerPorId(noticiaId);
+        News noticia = obtenerPorId(noticiaId);
         noticiaRepository.delete(noticia);
     }
 }

@@ -1,7 +1,7 @@
 package com.rotarywebsite.backend.controller;
 
-import com.rotarywebsite.backend.model.Documento;
-import com.rotarywebsite.backend.service.DocumentoService;
+import com.rotarywebsite.backend.model.Document;
+import com.rotarywebsite.backend.service.DocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +13,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/documentos")
 @CrossOrigin(origins = "*")
-public class DocumentoController {
+public class DocumentController {
 
     @Autowired
-    private DocumentoService documentoService;
+    private DocumentService documentoService;
 
     // Subir documento para proyecto
     @PostMapping("/proyecto/{proyectoId}")
@@ -25,7 +25,7 @@ public class DocumentoController {
             @RequestParam("archivo") MultipartFile archivo,
             @RequestParam(value = "descripcion", required = false) String descripcion) {
         try {
-            Documento documento = documentoService.guardarDocumentoProyecto(archivo, proyectoId, descripcion);
+            Document documento = documentoService.guardarDocumentoProyecto(archivo, proyectoId, descripcion);
             return ResponseEntity.ok(documento);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -39,7 +39,7 @@ public class DocumentoController {
             @RequestParam("archivo") MultipartFile archivo,
             @RequestParam(value = "descripcion", required = false) String descripcion) {
         try {
-            Documento documento = documentoService.guardarDocumentoNoticia(archivo, noticiaId, descripcion);
+            Document documento = documentoService.guardarDocumentoNoticia(archivo, noticiaId, descripcion);
             return ResponseEntity.ok(documento);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -48,9 +48,9 @@ public class DocumentoController {
 
     // Obtener documentos por proyecto
     @GetMapping("/proyecto/{proyectoId}")
-    public ResponseEntity<List<Documento>> obtenerPorProyecto(@PathVariable Long proyectoId) {
+    public ResponseEntity<List<Document>> obtenerPorProyecto(@PathVariable Long proyectoId) {
         try {
-            List<Documento> documentos = documentoService.obtenerPorProyecto(proyectoId);
+            List<Document> documentos = documentoService.obtenerPorProyecto(proyectoId);
             return ResponseEntity.ok(documentos);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -59,9 +59,9 @@ public class DocumentoController {
 
     // Obtener documentos por noticia
     @GetMapping("/noticia/{noticiaId}")
-    public ResponseEntity<List<Documento>> obtenerPorNoticia(@PathVariable Long noticiaId) {
+    public ResponseEntity<List<Document>> obtenerPorNoticia(@PathVariable Long noticiaId) {
         try {
-            List<Documento> documentos = documentoService.obtenerPorNoticia(noticiaId);
+            List<Document> documentos = documentoService.obtenerPorNoticia(noticiaId);
             return ResponseEntity.ok(documentos);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -83,7 +83,7 @@ public class DocumentoController {
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         try {
-            Documento documento = documentoService.obtenerPorId(id);
+            Document documento = documentoService.obtenerPorId(id);
             return ResponseEntity.ok(documento);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

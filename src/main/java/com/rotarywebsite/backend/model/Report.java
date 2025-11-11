@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reportes")
-public class Reporte {
+public class Report {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -13,7 +13,7 @@ public class Reporte {
     private String nombre;
     
     @Enumerated(EnumType.STRING)
-    private TipoReporte tipo;
+    private ReportType tipo;
     
     @Column(length = 2000)
     private String contenido; // JSON o datos del reporte
@@ -25,12 +25,12 @@ public class Reporte {
     // Relación con quien generó el reporte
     @ManyToOne
     @JoinColumn(name = "generado_por_id")
-    private Miembro generadoPor;
+    private Member generadoPor;
     
     // CONSTRUCTORES
-    public Reporte() {}
+    public Report() {}
     
-    public Reporte(String nombre, TipoReporte tipo, Miembro generadoPor) {
+    public Report(String nombre, ReportType tipo, Member generadoPor) {
         this.nombre = nombre;
         this.tipo = tipo;
         this.generadoPor = generadoPor;
@@ -44,8 +44,8 @@ public class Reporte {
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
     
-    public TipoReporte getTipo() { return tipo; }
-    public void setTipo(TipoReporte tipo) { this.tipo = tipo; }
+    public ReportType getTipo() { return tipo; }
+    public void setTipo(ReportType tipo) { this.tipo = tipo; }
     
     public String getContenido() { return contenido; }
     public void setContenido(String contenido) { this.contenido = contenido; }
@@ -56,6 +56,6 @@ public class Reporte {
     public LocalDateTime getFechaGeneracion() { return fechaGeneracion; }
     public void setFechaGeneracion(LocalDateTime fechaGeneracion) { this.fechaGeneracion = fechaGeneracion; }
     
-    public Miembro getGeneradoPor() { return generadoPor; }
-    public void setGeneradoPor(Miembro generadoPor) { this.generadoPor = generadoPor; }
+    public Member getGeneradoPor() { return generadoPor; }
+    public void setGeneradoPor(Member generadoPor) { this.generadoPor = generadoPor; }
 }

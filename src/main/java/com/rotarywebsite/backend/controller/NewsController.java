@@ -1,7 +1,7 @@
 package com.rotarywebsite.backend.controller;
 
-import com.rotarywebsite.backend.model.Noticia;
-import com.rotarywebsite.backend.service.NoticiaService;
+import com.rotarywebsite.backend.model.News;
+import com.rotarywebsite.backend.service.NewsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,22 +12,22 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/noticias")
 @CrossOrigin(origins = "*")
-public class NoticiaController {
+public class NewsController {
 
     @Autowired
-    private NoticiaService noticiaService;
+    private NewsService noticiaService;
 
     // Obtener todas las noticias
     @GetMapping
-    public ResponseEntity<List<Noticia>> obtenerTodas() {
-        List<Noticia> noticias = noticiaService.obtenerTodas();
+    public ResponseEntity<List<News>> obtenerTodas() {
+        List<News> noticias = noticiaService.obtenerTodas();
         return ResponseEntity.ok(noticias);
     }
 
     // Obtener últimas noticias
     @GetMapping("/ultimas")
-    public ResponseEntity<List<Noticia>> obtenerUltimas() {
-        List<Noticia> noticias = noticiaService.obtenerUltimasNoticias();
+    public ResponseEntity<List<News>> obtenerUltimas() {
+        List<News> noticias = noticiaService.obtenerUltimasNoticias();
         return ResponseEntity.ok(noticias);
     }
 
@@ -35,7 +35,7 @@ public class NoticiaController {
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         try {
-            Noticia noticia = noticiaService.obtenerPorId(id);
+            News noticia = noticiaService.obtenerPorId(id);
             return ResponseEntity.ok(noticia);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -56,7 +56,7 @@ public class NoticiaController {
             String porQue = (String) request.get("porQue");
             String como = (String) request.get("como");
 
-            Noticia noticia = noticiaService.crearNoticia(
+            News noticia = noticiaService.crearNoticia(
                 titulo, lead, contenido, autorId, que, cuando, donde, porQue, como
             );
             return ResponseEntity.ok(noticia);
@@ -67,9 +67,9 @@ public class NoticiaController {
 
     // Actualizar noticia
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarNoticia(@PathVariable Long id, @RequestBody Noticia noticiaActualizada) {
+    public ResponseEntity<?> actualizarNoticia(@PathVariable Long id, @RequestBody News noticiaActualizada) {
         try {
-            Noticia noticia = noticiaService.actualizarNoticia(id, noticiaActualizada);
+            News noticia = noticiaService.actualizarNoticia(id, noticiaActualizada);
             return ResponseEntity.ok(noticia);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -89,8 +89,8 @@ public class NoticiaController {
 
     // Buscar noticias por título
     @GetMapping("/buscar")
-    public ResponseEntity<List<Noticia>> buscarPorTitulo(@RequestParam String titulo) {
-        List<Noticia> noticias = noticiaService.buscarPorTitulo(titulo);
+    public ResponseEntity<List<News>> buscarPorTitulo(@RequestParam String titulo) {
+        List<News> noticias = noticiaService.buscarPorTitulo(titulo);
         return ResponseEntity.ok(noticias);
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "proyectos")
-public class Proyecto {
+public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,7 +18,7 @@ public class Proyecto {
     private String descripcion;
     
     @Enumerated(EnumType.STRING)
-    private EstadoProyecto estado = EstadoProyecto.PLANIFICACION;
+    private ProjectStatus estado = ProjectStatus.PLANNING;
     
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
@@ -42,16 +42,16 @@ public class Proyecto {
     // Relación con Miembro (creador)
     @ManyToOne
     @JoinColumn(name = "creador_id")
-    private Miembro creador;
+    private Member creador;
     
     // Documentos del proyecto
     @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL)
-    private List<Documento> documentos = new ArrayList<>();
+    private List<Document> documentos = new ArrayList<>();
     
     // CONSTRUCTORES
-    public Proyecto() {}
+    public Project() {}
     
-    public Proyecto(String nombre, String descripcion, Miembro creador) {
+    public Project(String nombre, String descripcion, Member creador) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.creador = creador;
@@ -68,8 +68,8 @@ public class Proyecto {
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
     
-    public EstadoProyecto getEstado() { return estado; }
-    public void setEstado(EstadoProyecto estado) { this.estado = estado; }
+    public ProjectStatus getEstado() { return estado; }
+    public void setEstado(ProjectStatus estado) { this.estado = estado; }
     
     public LocalDate getFechaInicio() { return fechaInicio; }
     public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
@@ -110,9 +110,9 @@ public class Proyecto {
     public Double getLongitud() { return longitud; }
     public void setLongitud(Double longitud) { this.longitud = longitud; }
     
-    public Miembro getCreador() { return creador; }
-    public void setCreador(Miembro creador) { this.creador = creador; }
+    public Member getCreador() { return creador; }
+    public void setCreador(Member creador) { this.creador = creador; }
     
-    public List<Documento> getDocumentos() { return documentos; }
-    public void setDocumentos(List<Documento> documentos) { this.documentos = documentos; }
+    public List<Document> getDocumentos() { return documentos; }
+    public void setDocumentos(List<Document> documentos) { this.documentos = documentos; }
 }

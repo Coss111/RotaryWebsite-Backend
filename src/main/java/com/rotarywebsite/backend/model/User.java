@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
-public class Usuario {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,7 +16,7 @@ public class Usuario {
     private String password;
     
     @Enumerated(EnumType.STRING)
-    private RolUsuario rol;
+    private UserRole rol;
     
     private Boolean activo = true;
     
@@ -25,9 +25,9 @@ public class Usuario {
     private LocalDateTime ultimoLogin;
     
     // CONSTRUCTORES
-    public Usuario() {}
+    public User() {}
     
-    public Usuario(String email, String password, RolUsuario rol) {
+    public User(String email, String password, UserRole rol) {
         this.email = email;
         this.password = password;
         this.rol = rol;
@@ -44,8 +44,8 @@ public class Usuario {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
     
-    public RolUsuario getRol() { return rol; }
-    public void setRol(RolUsuario rol) { this.rol = rol; }
+    public UserRole getRol() { return rol; }
+    public void setRol(UserRole rol) { this.rol = rol; }
     
     public Boolean getActivo() { return activo; }
     public void setActivo(Boolean activo) { this.activo = activo; }

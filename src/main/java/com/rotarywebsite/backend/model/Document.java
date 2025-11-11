@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "documentos")
-public class Documento {
+public class Document {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,16 +20,16 @@ public class Documento {
     // Relaciones (documento puede pertenecer a Proyecto o Noticia)
     @ManyToOne
     @JoinColumn(name = "proyecto_id")
-    private Proyecto proyecto;
+    private Project proyecto;
     
     @ManyToOne
     @JoinColumn(name = "noticia_id")
-    private Noticia noticia;
+    private News noticia;
     
     // CONSTRUCTORES
-    public Documento() {}
+    public Document() {}
     
-    public Documento(String nombreArchivo, String url, String tipoContenido) {
+    public Document(String nombreArchivo, String url, String tipoContenido) {
         this.nombreArchivo = nombreArchivo;
         this.url = url;
         this.tipoContenido = tipoContenido;
@@ -55,9 +55,9 @@ public class Documento {
     public LocalDateTime getFechaSubida() { return fechaSubida; }
     public void setFechaSubida(LocalDateTime fechaSubida) { this.fechaSubida = fechaSubida; }
     
-    public Proyecto getProyecto() { return proyecto; }
-    public void setProyecto(Proyecto proyecto) { this.proyecto = proyecto; }
+    public Project getProyecto() { return proyecto; }
+    public void setProyecto(Project proyecto) { this.proyecto = proyecto; }
     
-    public Noticia getNoticia() { return noticia; }
-    public void setNoticia(Noticia noticia) { this.noticia = noticia; }
+    public News getNoticia() { return noticia; }
+    public void setNoticia(News noticia) { this.noticia = noticia; }
 }

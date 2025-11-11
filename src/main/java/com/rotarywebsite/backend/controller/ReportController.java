@@ -1,7 +1,7 @@
 package com.rotarywebsite.backend.controller;
 
-import com.rotarywebsite.backend.model.Reporte;
-import com.rotarywebsite.backend.service.ReporteService;
+import com.rotarywebsite.backend.model.Report;
+import com.rotarywebsite.backend.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,15 +12,15 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/reportes")
 @CrossOrigin(origins = "*")
-public class ReporteController {
+public class ReportController {
 
     @Autowired
-    private ReporteService reporteService;
+    private ReportService reporteService;
 
     // Obtener todos los reportes
     @GetMapping
-    public ResponseEntity<List<Reporte>> obtenerTodos() {
-        List<Reporte> reportes = reporteService.obtenerTodos();
+    public ResponseEntity<List<Report>> obtenerTodos() {
+        List<Report> reportes = reporteService.obtenerTodos();
         return ResponseEntity.ok(reportes);
     }
 
@@ -28,7 +28,7 @@ public class ReporteController {
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         try {
-            Reporte reporte = reporteService.obtenerPorId(id);
+            Report reporte = reporteService.obtenerPorId(id);
             return ResponseEntity.ok(reporte);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -40,7 +40,7 @@ public class ReporteController {
     public ResponseEntity<?> generarReporteMembresias(@RequestBody Map<String, Long> request) {
         try {
             Long generadoPorId = request.get("generadoPorId");
-            Reporte reporte = reporteService.generarReporteMembresias(generadoPorId);
+            Report reporte = reporteService.generarReporteMembresias(generadoPorId);
             return ResponseEntity.ok(reporte);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -52,7 +52,7 @@ public class ReporteController {
     public ResponseEntity<?> generarReporteProyectos(@RequestBody Map<String, Long> request) {
         try {
             Long generadoPorId = request.get("generadoPorId");
-            Reporte reporte = reporteService.generarReporteProyectos(generadoPorId);
+            Report reporte = reporteService.generarReporteProyectos(generadoPorId);
             return ResponseEntity.ok(reporte);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -61,8 +61,8 @@ public class ReporteController {
 
     // Obtener últimos reportes
     @GetMapping("/ultimos")
-    public ResponseEntity<List<Reporte>> obtenerUltimosReportes() {
-        List<Reporte> reportes = reporteService.obtenerUltimosReportes();
+    public ResponseEntity<List<Report>> obtenerUltimosReportes() {
+        List<Report> reportes = reporteService.obtenerUltimosReportes();
         return ResponseEntity.ok(reportes);
     }
 

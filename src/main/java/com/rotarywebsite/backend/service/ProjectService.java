@@ -1,72 +1,72 @@
 package com.rotarywebsite.backend.service;
 
-import com.rotarywebsite.backend.model.Proyecto;
-import com.rotarywebsite.backend.model.Miembro;
-import com.rotarywebsite.backend.model.EstadoProyecto;
-import com.rotarywebsite.backend.repository.ProyectoRepository;
+import com.rotarywebsite.backend.model.Project;
+import com.rotarywebsite.backend.model.Member;
+import com.rotarywebsite.backend.model.ProjectStatus;
+import com.rotarywebsite.backend.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class ProyectoService {
+public class ProjectService {
 
     @Autowired
-    private ProyectoRepository proyectoRepository;
+    private ProjectRepository proyectoRepository;
 
     @Autowired
-    private MiembroService miembroService;
+    private MemberService miembroService;
 
     // Crear nuevo proyecto
-    public Proyecto crearProyecto(String nombre, String descripcion, Long creadorId) {
-        Miembro creador = miembroService.obtenerPorId(creadorId)
+    public Project crearProyecto(String nombre, String descripcion, Long creadorId) {
+        Member creador = miembroService.obtenerPorId(creadorId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
-        Proyecto proyecto = new Proyecto(nombre, descripcion, creador);
+        Project proyecto = new Project(nombre, descripcion, creador);
         return proyectoRepository.save(proyecto);
     }
 
     // Obtener todos los proyectos
-    public List<Proyecto> obtenerTodos() {
+    public List<Project> obtenerTodos() {
         return proyectoRepository.findAll();
     }
 
     // Obtener proyecto por ID
-    public Proyecto obtenerPorId(Long id) {
+    public Project obtenerPorId(Long id) {
         return proyectoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
     }
 
     // Buscar proyectos por nombre
-    public List<Proyecto> buscarPorNombre(String nombre) {
+    public List<Project> buscarPorNombre(String nombre) {
         return proyectoRepository.findByNombreContainingIgnoreCase(nombre);
     }
 
     // Obtener proyectos por estado
-    public List<Proyecto> obtenerPorEstado(EstadoProyecto estado) {
+    public List<Project> obtenerPorEstado(ProjectStatus estado) {
         return proyectoRepository.findByEstado(estado);
     }
 
     // Cambiar estado de proyecto
-    public Proyecto cambiarEstado(Long proyectoId, EstadoProyecto nuevoEstado) {
-        Proyecto proyecto = obtenerPorId(proyectoId);
+    public Project cambiarEstado(Long proyectoId, ProjectStatus nuevoEstado) {
+        Project proyecto = obtenerPorId(proyectoId);
         proyecto.setEstado(nuevoEstado);
         return proyectoRepository.save(proyecto);
     }
 
     // Obtener proyectos activos
-    public List<Proyecto> obtenerProyectosActivos() {
-        List<EstadoProyecto> estadosInactivos = List.of(
-            EstadoProyecto.COMPLETADO, 
-            EstadoProyecto.CANCELADO
+    public List<Project> obtenerProyectosActivos() {
+        List<ProjectStatus> estadosInactivos = List.of(
+            ProjectStatus.COMPLETED, 
+            ProjectStatus.CANCELLED
         );
         return proyectoRepository.findByEstadoNotIn(estadosInactivos);
     }
 
     // Actualizar proyecto
-    public Proyecto actualizarProyecto(Long proyectoId, Proyecto proyectoActualizado) {
-        Proyecto proyecto = obtenerPorId(proyectoId);
+    public Project actualizarProyecto(Long proyectoId, Project proyectoActualizado) {
+        Project proyecto = obtenerPorId(proyectoId);
         
         proyecto.setNombre(proyectoActualizado.getNombre());
         proyecto.setDescripcion(proyectoActualizado.getDescripcion());
@@ -78,7 +78,7 @@ public class ProyectoService {
     }
 
     // Contar proyectos por estado
-    public long contarPorEstado(EstadoProyecto estado) {
+    public long contarPorEstado(ProjectStatus estado) {
         return proyectoRepository.countByEstado(estado);
     }
 }

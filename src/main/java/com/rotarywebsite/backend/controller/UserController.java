@@ -1,68 +1,69 @@
 package com.rotarywebsite.backend.controller;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import com.rotarywebsite.backend.model.User;
+import com.rotarywebsite.backend.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
 public class UserController {
 
-    @GetMapping("/profile")
-    public Map<String, Object> userProfile(@AuthenticationPrincipal OAuth2User principal) {
-        if (principal == null) {
-            return Map.of(
-                "authenticated", false,
-                "message", "Usuario no autenticado"
-            );
-        }
-        
-        // GitHub attributes
-        String name = principal.getAttribute("name");
-        String login = principal.getAttribute("login");
-        String email = principal.getAttribute("email");
-        String avatarUrl = principal.getAttribute("avatar_url");
-        String htmlUrl = principal.getAttribute("html_url");
-        
-        return Map.of(
-            "authenticated", true,
-            "name", name != null ? name : login,
-            "username", login,
-            "email", email,
-            "avatarUrl", avatarUrl,
-            "profileUrl", htmlUrl,
-            "provider", "GitHub"
-        );
+    @Autowired
+    private UserService usuarioService;
+
+    // Obtener todos los usuarios (solo admin)
+    @GetMapping
+    public ResponseEntity<List<User>> obtenerTodos() {
+        List<User> usuarios = usuarioService.listarPorRol(com.rotarywebsite.backend.model.UserRole.MEMBER);
+        return ResponseEntity.ok(usuarios);
     }
 
-    @GetMapping("/info")
-    public Map<String, Object> userInfo(@AuthenticationPrincipal OAuth2User principal) {
-        if (principal == null) {
-            return Map.of("authenticated", false);
+    // Obtener usuario por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+        try {
+            Optional<User> usuario = usuarioService.obtenerPorId(id);
+            if (usuario.isPresent()) {
+                return ResponseEntity.ok(usuario.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-        return principal.getAttributes();
     }
 
-    @GetMapping("/status")
-    public Map<String, Object> authStatus(@AuthenticationPrincipal OAuth2User principal) {
-        boolean isAuthenticated = principal != null;
-        Map<String, Object> response = Map.of(
-            "authenticated", isAuthenticated,
-            "timestamp", System.currentTimeMillis()
-        );
-        
-        if (isAuthenticated) {
-            return Map.of(
-                "authenticated", true,
-                "user", principal.getAttribute("login"),
-                "name", principal.getAttribute("name")
-            );
+    // Cambiar estado de usuario (activar/desactivar)
+    @PutMapping("/{id}/estado")
+    public ResponseEntity<?> cambiarEstado(@PathVariable Long id, @RequestBody Map<String, Boolean> request) {
+        try {
+            Boolean activo = request.get("activo");
+            User usuario = usuarioService.cambiarEstado(id, activo);
+            return ResponseEntity.ok(usuario);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-        
-        return response;
+    }
+
+    // Obtener usuario por email
+    @GetMapping("/email/{email}")
+    public ResponseEntity<?> obtenerPorEmail(@PathVariable String email) {
+        try {
+            Optional<User> usuario = usuarioService.obtenerPorEmail(email);
+            if (usuario.isPresent()) {
+                return ResponseEntity.ok(usuario.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }
