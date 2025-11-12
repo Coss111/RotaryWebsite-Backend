@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import com.rotarywebsite.backend.service.CustomOAuth2UserService;
 
 import java.util.Arrays;
@@ -31,23 +32,31 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
+    // Un único bean SecurityFilterChain (nombre opcional para claridad)
+    @Bean(name = "apiSecurityFilterChain")
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/", "/public/**", "/api/auth/**", "/error").permitAll()
-                .requestMatchers("/api/files/**").permitAll()
-                .requestMatchers("/oauth2/**", "/login/**").permitAll()
-                .requestMatchers("/api/members/**", "/api/projects/**", "/api/news/**").hasAnyRole("MEMBER", "ADMINISTRATOR")
-                .requestMatchers("/api/users/**", "/api/reports/**").hasRole("ADMINISTRATOR")
+                // públicos
+                .requestMatchers("/", "/public/", "/api/auth/", "/error").permitAll()
+                .requestMatchers("/api/files/").permitAll()
+                // endpoints de OAuth2
+                .requestMatchers("/oauth2/", "/login/").permitAll()
+                // miembros
+                .requestMatchers("/api/members/", "/api/projects/", "/api/news/")
+                    .hasAnyRole("MEMBER", "ADMINISTRATOR")
+                // solo admin
+                .requestMatchers("/api/users/", "/api/reports/")
+                    .hasRole("ADMINISTRATOR")
+                // el resto autenticado
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(customOAuth2UserService)
-                )
+                .loginPage("/oauth2/authorization/github")
+                .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                 .defaultSuccessUrl("/api/user/profile", true)
                 .failureUrl("/public/auth-error")
             )
@@ -67,9 +76,9 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/", configuration);
         return source;
     }
 }
