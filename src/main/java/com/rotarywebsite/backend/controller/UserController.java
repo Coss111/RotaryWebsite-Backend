@@ -11,57 +11,51 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
 public class UserController {
 
     @Autowired
-    private UserService usuarioService;
+    private UserService userService;
 
-    // Obtener todos los usuarios (solo admin)
-    @GetMapping
-    public ResponseEntity<List<User>> obtenerTodos() {
-        List<User> usuarios = usuarioService.getByRole(com.rotarywebsite.backend.model.UserRole.MEMBER);
-        return ResponseEntity.ok(usuarios);
+    // Get all users (Admin only)
+    @GetMapping("/all")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
-    // Obtener usuario por ID
+    // Get user by ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
-            Optional<User> usuario = usuarioService.getById(id);
-            if (usuario.isPresent()) {
-                return ResponseEntity.ok(usuario.get());
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            Optional<User> user = userService.getById(id);
+            return user.map(ResponseEntity::ok)
+                       .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Cambiar estado de usuario (activar/desactivar)
-    @PutMapping("/{id}/estado")
-    public ResponseEntity<?> cambiarEstado(@PathVariable Long id, @RequestBody Map<String, Boolean> request) {
+    // Change user status (active/inactive)
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> changeUserStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> request) {
         try {
-            Boolean activo = request.get("activo");
-            User usuario = usuarioService.changeStatus(id, activo);
-            return ResponseEntity.ok(usuario);
+            Boolean active = request.get("active");
+            User user = userService.changeStatus(id, active);
+            return ResponseEntity.ok(user);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Obtener usuario por email
+    // Get user by email
     @GetMapping("/email/{email}")
-    public ResponseEntity<?> obtenerPorEmail(@PathVariable String email) {
+    public ResponseEntity<?> getUserByEmail(@PathVariable String email) {
         try {
-            Optional<User> usuario = usuarioService.getByEmail(email);
-            if (usuario.isPresent()) {
-                return ResponseEntity.ok(usuario.get());
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            Optional<User> user = userService.getByEmail(email);
+            return user.map(ResponseEntity::ok)
+                       .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

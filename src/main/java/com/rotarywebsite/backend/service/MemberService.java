@@ -1,10 +1,15 @@
 package com.rotarywebsite.backend.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import com.rotarywebsite.backend.model.Member;
 import com.rotarywebsite.backend.model.User;
+import com.rotarywebsite.backend.model.UserRole;
 import com.rotarywebsite.backend.model.MembershipStatus;
 import com.rotarywebsite.backend.repository.MemberRepository;
+import com.rotarywebsite.backend.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -15,61 +20,72 @@ import java.util.Optional;
 public class MemberService {
 
     @Autowired
-    private MemberRepository miembroRepository;
+    private MemberRepository memberRepository;
 
     @Autowired
-    private UserService usuarioService;
+    private UserRepository userRepository;
 
-    // Crear nuevo miembro
-    public Member createMember(String nombre, String telefono, String ocupacion, 
-                               String email, String password) {
-        // Crear usuario primero
-        User usuario = usuarioService.createUser(email, password, com.rotarywebsite.backend.model.UserRole.MEMBER);
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public Member createMember(String name, String phone, String occupation, String email, String password) {
+        // 1. Create User first
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRol(UserRole.MEMBER);
+        user.setActivo(true);
+        user.setFechaRegistro(LocalDateTime.now());
+        user = userRepository.save(user);
+
+        // 2. Create Member linked to that User
+        Member member = new Member();
+        member.setNombre(name);
+        member.setTelefono(phone);
+        member.setOcupacion(occupation);
+        member.setUsuario(user); 
+        member.setFechaIngreso(LocalDate.now()); // Seteamos fechas iniciales
+        member.setFechaRenovacion(LocalDate.now().plusYears(1));
         
-        // Crear miembro
-        Member miembro = new Member(nombre, telefono, ocupacion, usuario);
-        return miembroRepository.save(miembro);
+        return memberRepository.save(member);
     }
 
-    // Obtener todos los miembros
     public List<Member> getAll() {
-        return miembroRepository.findAll();
+        return memberRepository.findAll();
     }
 
-    // Obtener miembro por ID
     public Optional<Member> getById(Long id) {
-        return miembroRepository.findById(id);
+        return memberRepository.findById(id);
     }
 
-    // Buscar miembros por nombre
-    public List<Member> searchByName(String nombre) {
-        return miembroRepository.findByNombreContainingIgnoreCase(nombre);
+    public List<Member> searchByName(String name) {
+        return memberRepository.findByNombreContainingIgnoreCase(name);
     }
 
-    // Obtener miembros por estado de membresía
-    public List<Member> getByStatus(MembershipStatus estado) {
-        return miembroRepository.findByEstadoMembresia(estado);
+    public List<Member> getByStatus(MembershipStatus status) {
+        return memberRepository.findByEstadoMembresia(status);
     }
 
-    // Renovar membresía
-    public Member renewMembership(Long miembroId) {
-        Member miembro = miembroRepository.findById(miembroId)
-                .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
+    public Member renewMembership(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
         
-        miembro.setEstadoMembresia(MembershipStatus.ACTIVE);
-        miembro.setFechaRenovacion(LocalDate.now().plusYears(1));
+        member.setEstadoMembresia(MembershipStatus.ACTIVE);
+        member.setFechaRenovacion(LocalDate.now().plusYears(1));
         
-        return miembroRepository.save(miembro);
+        // CORREGIDO: memberRepository (antes decía membrRepository)
+        return memberRepository.save(member);
     }
 
-    // Obtener miembros que necesitan renovación
     public List<Member> getPendingRenewal() {
-        LocalDate fechaLimite = LocalDate.now().plusDays(30);
-        return miembroRepository.findByFechaRenovacionLessThan(fechaLimite);
+        LocalDate deadline = LocalDate.now().plusDays(30);
+        // CORREGIDO: memberRepository
+        return memberRepository.findByFechaRenovacionLessThan(deadline);
     }
 
-    // Contar miembros por estado
-    public long countByStatus(MembershipStatus estado) {
-        return miembroRepository.countByEstadoMembresia(estado);
+    public long countByStatus(MembershipStatus status) {
+        // CORREGIDO: memberRepository
+        return memberRepository.countByEstadoMembresia(status);
     }
 }

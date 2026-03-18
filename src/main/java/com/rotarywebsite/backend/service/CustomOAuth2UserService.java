@@ -33,7 +33,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private void processOAuth2User(OAuth2User oAuth2User) {
         Map<String, Object> attributes = oAuth2User.getAttributes();
         String email = (String) attributes.get("email");
-        String name = (String) attributes.get("name");
+        //String name = (String) attributes.get("name");
         String login = (String) attributes.get("login"); // GitHub username
 
         Optional<User> userOptional = userRepository.findByEmail(email);

@@ -60,4 +60,8 @@ public class UserService {
         usuario.setActivo(activo);
         return usuarioRepository.save(usuario);
     }
+
+    public List<User> getAllUsers() {
+    return usuarioRepository.findAll();
+}
 }

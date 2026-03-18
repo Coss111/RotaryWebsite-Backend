@@ -19,8 +19,8 @@ public class ReportService {
     @Autowired
     private MemberService miembroService;
 
-    @Autowired
-    private ProjectService proyectoService;
+    //@Autowired
+    //private ProjectService proyectoService;
 
     @Autowired
     private MemberService miembrosService;

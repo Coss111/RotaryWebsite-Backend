@@ -1,6 +1,7 @@
 package com.rotarywebsite.backend.service;
 
 import com.rotarywebsite.backend.model.Project;
+import com.rotarywebsite.backend.dto.ProjectDTO;
 import com.rotarywebsite.backend.model.Member;
 import com.rotarywebsite.backend.model.ProjectStatus;
 import com.rotarywebsite.backend.repository.ProjectRepository;
@@ -76,6 +77,33 @@ public class ProjectService {
         
         return proyectoRepository.save(proyecto);
     }
+
+    // Reemplaza o añade estos métodos en ProjectService.java
+
+public Project saveProjectFromDTO(ProjectDTO dto) {
+    // 1. Validar fechas (Lógica de negocio para tu tesis)
+    if (dto.getStartDate() != null && dto.getEndDate() != null) {
+        if (dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new RuntimeException("La fecha de fin no puede ser anterior a la de inicio");
+        }
+    }
+
+    // 2. Buscar al creador
+    Member creador = miembroService.getById(dto.getCreatorId())
+            .orElseThrow(() -> new RuntimeException("El miembro creador no existe"));
+
+    // 3. Mapear datos
+    Project proyecto = new Project();
+    proyecto.setNombre(dto.getName());
+    proyecto.setDescripcion(dto.getDescription());
+    proyecto.setCreador(creador);
+    proyecto.setLugar(dto.getLocation());
+    proyecto.setPresupuesto(dto.getBudget());
+    proyecto.setImpactoSocial(dto.getSocialImpact());
+    proyecto.setEstado(ProjectStatus.PLANNING); // Estado inicial por defecto
+
+    return proyectoRepository.save(proyecto);
+}
 
     // Contar proyectos por estado
     public long countByStatus(ProjectStatus estado) {

@@ -1,7 +1,9 @@
 package com.rotarywebsite.backend.model;
 
+// Asegúrate de tener este import
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "usuarios")
@@ -13,17 +15,25 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
     
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
-    
+
     @Enumerated(EnumType.STRING)
     private UserRole rol;
     
     private Boolean activo = true;
     
-    private LocalDateTime fechaRegistro;
+    private LocalDateTime fechaRegistro = LocalDateTime.now(); // Se asigna al crear el objeto
     
     private LocalDateTime ultimoLogin;
     
+    // ESTO ES LO NUEVO: Se ejecuta automáticamente antes de insertar en la BD
+    @PrePersist
+    protected void onCreate() {
+        this.fechaRegistro = LocalDateTime.now();
+        this.activo = true; // Así te aseguras que siempre nazcan activos
+    }
+
     // CONSTRUCTORES
     public User() {}
     

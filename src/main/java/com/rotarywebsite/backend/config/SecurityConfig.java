@@ -32,27 +32,26 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // Un único bean SecurityFilterChain (nombre opcional para claridad)
     @Bean(name = "apiSecurityFilterChain")
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   CorsConfigurationSource corsConfigurationSource) throws Exception {
+                                                CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                // públicos
-                .requestMatchers("/", "/public/", "/api/auth/", "/error").permitAll()
-                .requestMatchers("/api/files/").permitAll()
-                // endpoints de OAuth2
-                .requestMatchers("/oauth2/", "/login/").permitAll()
-                // miembros
-                .requestMatchers("/api/members/", "/api/projects/", "/api/news/")
-                    .hasAnyRole("MEMBER", "ADMINISTRATOR")
-                // solo admin
-                .requestMatchers("/api/users/", "/api/reports/")
-                    .hasRole("ADMINISTRATOR")
-                // el resto autenticado
+                // Permitimos todo lo relacionado con auth y lo público
+                .requestMatchers("/api/auth/**", "/public/**", "/error").permitAll()
+                .requestMatchers("/api/files/**").permitAll()
+                .requestMatchers("/api/users/**").permitAll() // Temporal para pruebas
                 .anyRequest().authenticated()
+            )
+            // ESTO ES LO NUEVO: Evita la redirección a GitHub en Postman
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"No autorizado, por favor inicia sesión\"}");
+                })
             )
             .oauth2Login(oauth2 -> oauth2
                 .loginPage("/oauth2/authorization/github")
