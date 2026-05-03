@@ -1,68 +1,112 @@
 package com.rotarywebsite.backend.model;
 
-// Asegúrate de tener este import
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(unique = true, nullable = false)
+
+    @Column(unique = true, nullable = false, length = 150)
     private String email;
-    
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Column(nullable = false, length = 255)
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
     private UserRole rol;
-    
+
+    @Column(nullable = false)
     private Boolean activo = true;
-    
-    private LocalDateTime fechaRegistro = LocalDateTime.now(); // Se asigna al crear el objeto
-    
+
+    @Column(name = "fecha_registro", nullable = false)
+    private LocalDateTime fechaRegistro = LocalDateTime.now();
+
+    @Column(name = "ultimo_login")
     private LocalDateTime ultimoLogin;
-    
-    // ESTO ES LO NUEVO: Se ejecuta automáticamente antes de insertar en la BD
+
     @PrePersist
     protected void onCreate() {
-        this.fechaRegistro = LocalDateTime.now();
-        this.activo = true; // Así te aseguras que siempre nazcan activos
+        if (this.fechaRegistro == null) {
+            this.fechaRegistro = LocalDateTime.now();
+        }
+        if (this.activo == null) {
+            this.activo = true;
+        }
     }
 
-    // CONSTRUCTORES
-    public User() {}
-    
+    public User() {
+    }
+
     public User(String email, String password, UserRole rol) {
         this.email = email;
         this.password = password;
         this.rol = rol;
         this.fechaRegistro = LocalDateTime.now();
+        this.activo = true;
     }
-    
-    // GETTERS Y SETTERS (generar con Lombok o manualmente)
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-    
-    public UserRole getRol() { return rol; }
-    public void setRol(UserRole rol) { this.rol = rol; }
-    
-    public Boolean getActivo() { return activo; }
-    public void setActivo(Boolean activo) { this.activo = activo; }
-    
-    public LocalDateTime getFechaRegistro() { return fechaRegistro; }
-    public void setFechaRegistro(LocalDateTime fechaRegistro) { this.fechaRegistro = fechaRegistro; }
-    
-    public LocalDateTime getUltimoLogin() { return ultimoLogin; }
-    public void setUltimoLogin(LocalDateTime ultimoLogin) { this.ultimoLogin = ultimoLogin; }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public UserRole getRol() {
+        return rol;
+    }
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public LocalDateTime getFechaRegistro() {
+        return fechaRegistro;
+    }
+
+    public LocalDateTime getUltimoLogin() {
+        return ultimoLogin;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setRol(UserRole rol) {
+        this.rol = rol;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    public void setFechaRegistro(LocalDateTime fechaRegistro) {
+        this.fechaRegistro = fechaRegistro;
+    }
+
+    public void setUltimoLogin(LocalDateTime ultimoLogin) {
+        this.ultimoLogin = ultimoLogin;
+    }
 }

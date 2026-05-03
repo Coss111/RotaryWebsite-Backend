@@ -2,30 +2,48 @@ package com.rotarywebsite.backend.repository;
 
 import com.rotarywebsite.backend.model.Member;
 import com.rotarywebsite.backend.model.MembershipStatus;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
-    
-    // Buscar miembro por nombre
+
+    @Override
+    @EntityGraph(attributePaths = {"usuario"})
+    List<Member> findAll();
+
+    @Override
+    @EntityGraph(attributePaths = {"usuario"})
+    Optional<Member> findById(Long id);
+
+    @EntityGraph(attributePaths = {"usuario"})
     List<Member> findByNombreContainingIgnoreCase(String nombre);
-    
-    // Buscar miembros por estado de membresía
+
+    @EntityGraph(attributePaths = {"usuario"})
     List<Member> findByEstadoMembresia(MembershipStatus estado);
-    
-    // Buscar miembro por email del usuario
+
+    @EntityGraph(attributePaths = {"usuario"})
     Optional<Member> findByUsuarioEmail(String email);
-    
-    // Buscar miembros que necesitan renovación (próximos 30 días)
-    List<Member> findByFechaRenovacionLessThan(java.time.LocalDate fechaLimite);
-    
-    // Contar miembros por estado
+
+    @EntityGraph(attributePaths = {"usuario"})
+    Optional<Member> findByUsuarioId(Long usuarioId);
+
+    @EntityGraph(attributePaths = {"usuario"})
+    List<Member> findByEstadoMembresiaAndFechaRenovacionBetween(
+            MembershipStatus estado,
+            LocalDate desde,
+            LocalDate hasta
+    );
+
     long countByEstadoMembresia(MembershipStatus estado);
-    
-    // Buscar miembros activos (estado ACTIVO)
+
+    @EntityGraph(attributePaths = {"usuario"})
     List<Member> findByEstadoMembresiaAndUsuarioActivoTrue(MembershipStatus estado);
+
+    boolean existsByUsuarioEmail(String email);
 }

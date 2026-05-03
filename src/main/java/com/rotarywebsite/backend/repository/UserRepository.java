@@ -10,19 +10,22 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    
-    // Buscar usuario por email
+
+    // Compatibilidad con código existente
     Optional<User> findByEmail(String email);
-    
-    // Verificar si existe un usuario con ese email
+
     boolean existsByEmail(String email);
-    
-    // Buscar usuarios por rol
+
+    // Versión mejorada para búsquedas case-insensitive
+    Optional<User> findByEmailIgnoreCase(String email);
+
+    boolean existsByEmailIgnoreCase(String email);
+
     List<User> findByRol(UserRole rol);
-    
-    // Buscar usuarios activos
+
     List<User> findByActivoTrue();
-    
-    // Buscar usuario por email y activo
+
     Optional<User> findByEmailAndActivoTrue(String email);
+
+    Optional<User> findByEmailIgnoreCaseAndActivoTrue(String email);
 }

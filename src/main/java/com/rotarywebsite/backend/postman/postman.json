@@ -1,0 +1,1347 @@
+{
+  "info": {
+    "_postman_id": "c96e84a1-1ff6-4bc8-a4b8-rotary-backend-auth",
+    "name": "Rotary Website Backend",
+    "description": "Colección de endpoints para Auth, Document, Project y News",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "projectId",
+      "value": "1"
+    },
+    {
+      "key": "newsId",
+      "value": "1"
+    },
+    {
+      "key": "documentId",
+      "value": "1"
+    },
+    {
+      "key": "jsessionid",
+      "value": ""
+    },
+    {
+      "key": "memberId",
+      "value": "1"
+    },
+    {
+      "key": "userId",
+      "value": "1"
+    },
+    {
+      "key": "reportId",
+      "value": "1"
+    },
+    {
+      "key": "notificationId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Juan Perez\",\n  \"phone\": \"77777777\",\n  \"occupation\": \"Ingeniero\",\n  \"email\": \"juan@example.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@rotary.org\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-email?email=admin@rotary.org",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify-email"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "admin@rotary.org"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Get All Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Project By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "{{projectId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Proyecto Agua Potable\",\n  \"description\": \"Proyecto para mejorar el acceso al agua potable en una comunidad.\",\n  \"status\": \"PLANNING\",\n  \"startDate\": \"2026-04-20\",\n  \"endDate\": \"2026-06-30\",\n  \"socialImpact\": \"Mejora de salud y acceso a servicios básicos.\",\n  \"budget\": 15000.50,\n  \"location\": \"La Paz\",\n  \"beneficiaryCount\": 120,\n  \"responsiblePerson\": \"Juan Pérez\",\n  \"newGenerationsParticipation\": true,\n  \"otherClubsParticipation\": false,\n  \"participatingInstitution\": \"Rotary Club La Paz\",\n  \"myRotaryUrl\": \"https://my.rotary.org/example\",\n  \"latitude\": -16.5000,\n  \"longitude\": -68.1500,\n  \"creatorId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Proyecto Agua Potable Actualizado\",\n  \"description\": \"Descripción actualizada del proyecto.\",\n  \"status\": \"IN_PROGRESS\",\n  \"startDate\": \"2026-04-20\",\n  \"endDate\": \"2026-07-15\",\n  \"socialImpact\": \"Impacto social actualizado.\",\n  \"budget\": 18000.00,\n  \"location\": \"El Alto\",\n  \"beneficiaryCount\": 150,\n  \"responsiblePerson\": \"María López\",\n  \"newGenerationsParticipation\": true,\n  \"otherClubsParticipation\": true,\n  \"participatingInstitution\": \"Rotary Club La Paz Norte\",\n  \"myRotaryUrl\": \"https://my.rotary.org/example-updated\",\n  \"latitude\": -16.5200,\n  \"longitude\": -68.1800,\n  \"creatorId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "{{projectId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change Project Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/{{projectId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "{{projectId}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Projects By Name",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/search?name=agua",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "agua"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Active Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "active"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Projects By Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/status/PLANNING",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "status",
+                "PLANNING"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "{{projectId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "News",
+      "item": [
+        {
+          "name": "Get All News",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/noticias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "noticias"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Latest News",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/noticias/ultimas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "noticias",
+                "ultimas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get News By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/noticias/{{newsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "noticias",
+                "{{newsId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create News",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nueva campaña solidaria\",\n  \"lead\": \"Rotary Club La Paz lanzó una nueva campaña de apoyo comunitario.\",\n  \"content\": \"El club presentó una campaña orientada a fortalecer la ayuda social en barrios vulnerables.\",\n  \"publicationDate\": \"2026-04-14\",\n  \"what\": \"Lanzamiento de campaña\",\n  \"when\": \"Abril 2026\",\n  \"where\": \"La Paz\",\n  \"why\": \"Apoyar a comunidades vulnerables\",\n  \"how\": \"Mediante actividades solidarias y coordinación con voluntarios\",\n  \"authorId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/noticias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "noticias"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update News",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nueva campaña solidaria actualizada\",\n  \"lead\": \"Lead actualizado de la noticia.\",\n  \"content\": \"Contenido actualizado de la noticia.\",\n  \"publicationDate\": \"2026-04-15\",\n  \"what\": \"Actualización de campaña\",\n  \"when\": \"Abril 2026\",\n  \"where\": \"La Paz\",\n  \"why\": \"Mayor alcance comunitario\",\n  \"how\": \"Con coordinación institucional\",\n  \"authorId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/noticias/{{newsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "noticias",
+                "{{newsId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete News",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/noticias/{{newsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "noticias",
+                "{{newsId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search News By Title",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/noticias/buscar?titulo=campaña",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "noticias",
+                "buscar"
+              ],
+              "query": [
+                {
+                  "key": "titulo",
+                  "value": "campaña"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search News By Content",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/noticias/buscar-contenido?texto=comunidad",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "noticias",
+                "buscar-contenido"
+              ],
+              "query": [
+                {
+                  "key": "texto",
+                  "value": "comunidad"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Documents",
+      "item": [
+        {
+          "name": "Upload Document To Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "archivo",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Documento del proyecto",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documentos/proyecto/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documentos",
+                "proyecto",
+                "{{projectId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Document To News",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "archivo",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Documento de la noticia",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documentos/noticia/{{newsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documentos",
+                "noticia",
+                "{{newsId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Documents By Project",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documentos/proyecto/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documentos",
+                "proyecto",
+                "{{projectId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Documents By News",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documentos/noticia/{{newsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documentos",
+                "noticia",
+                "{{newsId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Document By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documentos/{{documentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documentos",
+                "{{documentId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Document Download Url",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documentos/{{documentId}}/download-url",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documentos",
+                "{{documentId}}",
+                "download-url"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Document",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documentos/{{documentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documentos",
+                "{{documentId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Members",
+      "item": [
+        {
+          "name": "Get All Members",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/miembros",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "miembros"]
+            }
+          }
+        },
+        {
+          "name": "Get Member By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/miembros/{{memberId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "miembros", "{{memberId}}"]
+            }
+          }
+        },
+        {
+          "name": "Search Members By Name",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/miembros/buscar?nombre=juan",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "miembros", "buscar"],
+              "query": [
+                {
+                  "key": "nombre",
+                  "value": "juan"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Members By Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/miembros/estado/ACTIVE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "miembros", "estado", "ACTIVE"]
+            }
+          }
+        },
+        {
+          "name": "Renew Membership",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/miembros/{{memberId}}/renovar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "miembros", "{{memberId}}", "renovar"]
+            }
+          }
+        },
+        {
+          "name": "Get Pending Renewals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/miembros/pendientes-renovacion",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "miembros", "pendientes-renovacion"]
+            }
+          }
+        },
+        {
+          "name": "Update Member",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Juan Perez Actualizado\",\n  \"phone\": \"77770000\",\n  \"occupation\": \"Ingeniero de Sistemas\",\n  \"address\": \"La Paz, Bolivia\",\n  \"membershipStatus\": \"ACTIVE\",\n  \"renewalDate\": \"2027-04-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/miembros/{{memberId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "miembros", "{{memberId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Member Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/miembros/estadisticas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "miembros", "estadisticas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get Active Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "active"]
+            }
+          }
+        },
+        {
+          "name": "Get User By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get User By Email",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/email/admin@rotary.org",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "email", "admin@rotary.org"]
+            }
+          }
+        },
+        {
+          "name": "Get Users By Role",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/role/ADMINISTRATOR",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "role", "ADMINISTRATOR"]
+            }
+          }
+        },
+        {
+          "name": "Change User Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Get All Reports",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes"]
+            }
+          }
+        },
+        {
+          "name": "Get Report By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reportId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes", "{{reportId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Reports By Type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/tipo/MEMBERSHIPS",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes", "tipo", "MEMBERSHIPS"]
+            }
+          }
+        },
+        {
+          "name": "Generate Membership Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"generatedById\": {{memberId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/membresias",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes", "membresias"]
+            }
+          }
+        },
+        {
+          "name": "Generate Project Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"generatedById\": {{memberId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/proyectos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes", "proyectos"]
+            }
+          }
+        },
+        {
+          "name": "Get Latest Reports",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/ultimos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes", "ultimos"]
+            }
+          }
+        },
+        {
+          "name": "Delete Report",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reportId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes", "{{reportId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get All Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notificaciones"]
+            }
+          }
+        },
+        {
+          "name": "Get Notification By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/{{notificationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notificaciones", "{{notificationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Notifications By Member",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/miembro/{{memberId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notificaciones", "miembro", "{{memberId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Notifications By Member",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/miembro/{{memberId}}/no-leidas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notificaciones", "miembro", "{{memberId}}", "no-leidas"]
+            }
+          }
+        },
+        {
+          "name": "Count Unread Notifications By Member",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/miembro/{{memberId}}/conteo-no-leidas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notificaciones", "miembro", "{{memberId}}", "conteo-no-leidas"]
+            }
+          }
+        },
+        {
+          "name": "Create Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nuevo aviso del sistema\",\n  \"message\": \"Tu membresía está próxima a vencer.\",\n  \"type\": \"MEMBERSHIP_EXPIRATION\",\n  \"channel\": \"BOTH\",\n  \"recipientMemberId\": {{memberId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notificaciones"]
+            }
+          }
+        },
+        {
+          "name": "Send Membership Renewal Reminders",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/recordatorios-renovacion",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notificaciones", "recordatorios-renovacion"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification As Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/{{notificationId}}/leer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notificaciones", "{{notificationId}}", "leer"]
+            }
+          }
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "JSESSIONID={{jsessionid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/{{notificationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notificaciones", "{{notificationId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

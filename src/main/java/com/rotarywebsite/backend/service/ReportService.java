@@ -1,11 +1,13 @@
 package com.rotarywebsite.backend.service;
 
-import com.rotarywebsite.backend.model.Report;
 import com.rotarywebsite.backend.model.Member;
+import com.rotarywebsite.backend.model.MembershipStatus;
+import com.rotarywebsite.backend.model.ProjectStatus;
+import com.rotarywebsite.backend.model.Report;
 import com.rotarywebsite.backend.model.ReportType;
 import com.rotarywebsite.backend.repository.ReportRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,30 +15,35 @@ import java.util.List;
 @Service
 public class ReportService {
 
-    @Autowired
-    private ReportRepository reporteRepository;
+    private final ReportRepository reporteRepository;
+    private final MemberService miembroService;
+    private final ProjectService projectService;
 
-    @Autowired
-    private MemberService miembroService;
+    public ReportService(ReportRepository reporteRepository,
+                         MemberService miembroService,
+                         ProjectService projectService) {
+        this.reporteRepository = reporteRepository;
+        this.miembroService = miembroService;
+        this.projectService = projectService;
+    }
 
-    //@Autowired
-    //private ProjectService proyectoService;
-
-    @Autowired
-    private MemberService miembrosService;
-
-    // Generar reporte de membresías
+    @Transactional
     public Report generateMembershipReport(Long generadoPorId) {
         Member generadoPor = miembroService.getById(generadoPorId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
-        // Lógica para generar reporte
-        long totalMiembros = miembrosService.countByStatus(com.rotarywebsite.backend.model.MembershipStatus.ACTIVE);
-        long pendientesRenovacion = miembrosService.countByStatus(com.rotarywebsite.backend.model.MembershipStatus.PENDING_RENEWAL);
+        long totalActivos = miembroService.countByStatus(MembershipStatus.ACTIVE);
+        long totalPendientes = miembroService.countByStatus(MembershipStatus.PENDING_RENEWAL);
+        long totalInactivos = miembroService.countByStatus(MembershipStatus.INACTIVE);
+        long totalSuspendidos = miembroService.countByStatus(MembershipStatus.SUSPENDED);
 
         String contenido = String.format(
-            "{\"totalMiembros\": %d, \"pendientesRenovacion\": %d, \"fechaGeneracion\": \"%s\"}",
-            totalMiembros, pendientesRenovacion, LocalDateTime.now()
+                "{\"active\": %d, \"pendingRenewal\": %d, \"inactive\": %d, \"suspended\": %d, \"generatedAt\": \"%s\"}",
+                totalActivos,
+                totalPendientes,
+                totalInactivos,
+                totalSuspendidos,
+                LocalDateTime.now()
         );
 
         Report reporte = new Report("Reporte de Membresías", ReportType.MEMBERSHIPS, generadoPor);
@@ -45,13 +52,26 @@ public class ReportService {
         return reporteRepository.save(reporte);
     }
 
-    // Generar reporte de proyectos
+    @Transactional
     public Report generateProjectReport(Long generadoPorId) {
         Member generadoPor = miembroService.getById(generadoPorId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
-        // Aquí iría la lógica para generar el reporte de proyectos
-        String contenido = "{\"reporte\": \"Proyectos en ejecución\", \"detalles\": \"...\"}";
+        long planning = projectService.countByStatus(ProjectStatus.PLANNING);
+        long inProgress = projectService.countByStatus(ProjectStatus.IN_PROGRESS);
+        long completed = projectService.countByStatus(ProjectStatus.COMPLETED);
+        long cancelled = projectService.countByStatus(ProjectStatus.CANCELLED);
+        long suspended = projectService.countByStatus(ProjectStatus.SUSPENDED);
+
+        String contenido = String.format(
+                "{\"planning\": %d, \"inProgress\": %d, \"completed\": %d, \"cancelled\": %d, \"suspended\": %d, \"generatedAt\": \"%s\"}",
+                planning,
+                inProgress,
+                completed,
+                cancelled,
+                suspended,
+                LocalDateTime.now()
+        );
 
         Report reporte = new Report("Reporte de Proyectos", ReportType.PROJECTS, generadoPor);
         reporte.setContenido(contenido);
@@ -59,28 +79,28 @@ public class ReportService {
         return reporteRepository.save(reporte);
     }
 
-    // Obtener todos los reportes
+    @Transactional(readOnly = true)
     public List<Report> getAll() {
         return reporteRepository.findAll();
     }
 
-    // Obtener reporte por ID
+    @Transactional(readOnly = true)
     public Report getById(Long id) {
         return reporteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
     }
 
-    // Obtener reportes por tipo
+    @Transactional(readOnly = true)
     public List<Report> getByType(ReportType tipo) {
         return reporteRepository.findByTipo(tipo);
     }
 
-    // Obtener últimos reportes
+    @Transactional(readOnly = true)
     public List<Report> getLatestReports() {
         return reporteRepository.findTop5ByOrderByFechaGeneracionDesc();
     }
 
-    // Eliminar reporte
+    @Transactional
     public void deleteReport(Long reporteId) {
         Report reporte = getById(reporteId);
         reporteRepository.delete(reporte);

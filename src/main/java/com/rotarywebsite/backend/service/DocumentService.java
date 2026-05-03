@@ -1,11 +1,9 @@
 package com.rotarywebsite.backend.service;
 
 import com.rotarywebsite.backend.model.Document;
-import com.rotarywebsite.backend.model.Project;
-import com.rotarywebsite.backend.model.News;
 import com.rotarywebsite.backend.repository.DocumentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -13,95 +11,116 @@ import java.util.List;
 @Service
 public class DocumentService {
 
-    @Autowired
-    private DocumentRepository documentoRepository;
+    private final DocumentRepository documentoRepository;
+    private final FileStorageService fileStorageService;
+    private final ProjectService proyectoService;
+    private final NewsService noticiaService;
 
-    @Autowired
-    private FileStorageService fileStorageService;
+    public DocumentService(
+            DocumentRepository documentoRepository,
+            FileStorageService fileStorageService,
+            ProjectService proyectoService,
+            NewsService noticiaService
+    ) {
+        this.documentoRepository = documentoRepository;
+        this.fileStorageService = fileStorageService;
+        this.proyectoService = proyectoService;
+        this.noticiaService = noticiaService;
+    }
 
-    @Autowired
-    private ProjectService proyectoService;
-
-    @Autowired
-    private NewsService noticiaService;
-
-    // Guardar documento para proyecto
+    @Transactional
     public Document saveProjectDocument(MultipartFile archivo, Long proyectoId, String descripcion) {
         try {
-            Project proyecto = proyectoService.getById(proyectoId);
-            
-            // Subir archivo a MinIO
-            String fileName = fileStorageService.uploadFile(archivo);
-            String fileUrl = fileStorageService.getFileUrl(fileName);
+            // Validar que el proyecto exista
+            var proyecto = proyectoService.getById(proyectoId);
+
+            // Subir archivo a MinIO y obtener la clave real del objeto
+            String objectName = fileStorageService.uploadFile(archivo);
 
             // Crear documento en BD
             Document documento = new Document(
-                archivo.getOriginalFilename(), 
-                fileUrl, 
-                archivo.getContentType()
+                    archivo.getOriginalFilename(),
+                    objectName,
+                    archivo.getContentType(),
+                    archivo.getSize()
             );
-            documento.setProyecto(proyecto);
-            documento.setTamaño(archivo.getSize());
 
+            documento.setProyecto(proyecto);
+
+            // Por ahora "descripcion" no se guarda porque tu entity Document no tiene ese campo
             return documentoRepository.save(documento);
+
         } catch (Exception e) {
-            throw new RuntimeException("Error al guardar documento: " + e.getMessage());
+            throw new RuntimeException("Error al guardar documento del proyecto: " + e.getMessage(), e);
         }
     }
 
-    // Guardar documento para noticia
+    @Transactional
     public Document saveNewsDocument(MultipartFile archivo, Long noticiaId, String descripcion) {
         try {
-            News noticia = noticiaService.getById(noticiaId);
-            
-            String fileName = fileStorageService.uploadFile(archivo);
-            String fileUrl = fileStorageService.getFileUrl(fileName);
+            // Validar que la noticia exista
+            var noticia = noticiaService.getById(noticiaId);
 
+            // Subir archivo a MinIO y obtener la clave real del objeto
+            String objectName = fileStorageService.uploadFile(archivo);
+
+            // Crear documento en BD
             Document documento = new Document(
-                archivo.getOriginalFilename(), 
-                fileUrl, 
-                archivo.getContentType()
+                    archivo.getOriginalFilename(),
+                    objectName,
+                    archivo.getContentType(),
+                    archivo.getSize()
             );
-            documento.setNoticia(noticia);
-            documento.setTamaño(archivo.getSize());
 
+            documento.setNoticia(noticia);
+
+            // Por ahora "descripcion" no se guarda porque tu entity Document no tiene ese campo
             return documentoRepository.save(documento);
+
         } catch (Exception e) {
-            throw new RuntimeException("Error al guardar documento: " + e.getMessage());
+            throw new RuntimeException("Error al guardar documento de la noticia: " + e.getMessage(), e);
         }
     }
 
-    // Obtener documentos por proyecto
+    @Transactional(readOnly = true)
     public List<Document> getByProject(Long proyectoId) {
-        Project proyecto = proyectoService.getById(proyectoId);
-        return documentoRepository.findByProyecto(proyecto);
+        // Validar existencia
+        proyectoService.getById(proyectoId);
+        return documentoRepository.findByProyectoId(proyectoId);
     }
 
-    // Obtener documentos por noticia
+    @Transactional(readOnly = true)
     public List<Document> getByNews(Long noticiaId) {
-        News noticia = noticiaService.getById(noticiaId);
-        return documentoRepository.findByNoticia(noticia);
+        // Validar existencia
+        noticiaService.getById(noticiaId);
+        return documentoRepository.findByNoticiaId(noticiaId);
     }
 
-    // Eliminar documento
+    @Transactional(readOnly = true)
+    public Document getById(Long id) {
+        return documentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
+    }
+
+    @Transactional
     public void deleteDocument(Long documentoId) {
         Document documento = documentoRepository.findById(documentoId)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
-        
-        // Eliminar de MinIO
+                .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + documentoId));
+
+        // Eliminar archivo en MinIO usando objectName
         try {
-            fileStorageService.deleteFile(documento.getUrl());
+            fileStorageService.deleteFile(documento.getObjectName());
         } catch (Exception e) {
-            System.err.println("Error al eliminar archivo de MinIO: " + e.getMessage());
+            throw new RuntimeException("Error al eliminar archivo de MinIO: " + e.getMessage(), e);
         }
-        
-        // Eliminar de BD
+
+        // Eliminar registro en BD
         documentoRepository.delete(documento);
     }
 
-    // Obtener documento por ID
-    public Document getById(Long id) {
-        return documentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+    @Transactional(readOnly = true)
+    public String getDownloadUrl(Long documentoId) {
+        Document documento = getById(documentoId);
+        return fileStorageService.getFileUrl(documento.getObjectName());
     }
 }

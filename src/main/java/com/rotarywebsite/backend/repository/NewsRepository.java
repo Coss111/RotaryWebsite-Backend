@@ -1,31 +1,43 @@
 package com.rotarywebsite.backend.repository;
 
 import com.rotarywebsite.backend.model.News;
-import com.rotarywebsite.backend.model.Member;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NewsRepository extends JpaRepository<News, Long> {
-    
-    // Buscar noticias por título
+
+    @Override
+    @EntityGraph(attributePaths = {"autor"})
+    List<News> findAll();
+
+    @Override
+    @EntityGraph(attributePaths = {"autor"})
+    Optional<News> findById(Long id);
+
+    @EntityGraph(attributePaths = {"autor"})
     List<News> findByTituloContainingIgnoreCase(String titulo);
-    
-    // Buscar noticias por autor
-    List<News> findByAutor(Member autor);
-    
-    // Buscar noticias por fecha de publicación
+
+    @EntityGraph(attributePaths = {"autor"})
+    List<News> findByAutorId(Long autorId);
+
+    @EntityGraph(attributePaths = {"autor"})
     List<News> findByFechaPublicacion(LocalDate fecha);
-    
-    // Buscar noticias entre fechas
+
+    @EntityGraph(attributePaths = {"autor"})
     List<News> findByFechaPublicacionBetween(LocalDate inicio, LocalDate fin);
-    
-    // Buscar últimas noticias ordenadas por fecha
+
+    @EntityGraph(attributePaths = {"autor"})
     List<News> findTop10ByOrderByFechaPublicacionDesc();
-    
-    // Buscar noticias por contenido del lead
+
+    @EntityGraph(attributePaths = {"autor"})
     List<News> findByLeadContainingIgnoreCase(String texto);
+
+    @EntityGraph(attributePaths = {"autor"})
+    List<News> findByContenidoContainingIgnoreCase(String texto);
 }

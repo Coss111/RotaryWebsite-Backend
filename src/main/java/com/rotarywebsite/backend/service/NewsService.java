@@ -1,10 +1,11 @@
 package com.rotarywebsite.backend.service;
 
-import com.rotarywebsite.backend.model.News;
+import com.rotarywebsite.backend.dto.NewsDTO;
 import com.rotarywebsite.backend.model.Member;
+import com.rotarywebsite.backend.model.News;
 import com.rotarywebsite.backend.repository.NewsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,80 +13,99 @@ import java.util.List;
 @Service
 public class NewsService {
 
-    @Autowired
-    private NewsRepository noticiaRepository;
+    private final NewsRepository noticiaRepository;
+    private final MemberService miembroService;
 
-    @Autowired
-    private MemberService miembroService;
+    public NewsService(NewsRepository noticiaRepository, MemberService miembroService) {
+        this.noticiaRepository = noticiaRepository;
+        this.miembroService = miembroService;
+    }
 
-    // Crear nueva noticia
-    public News createNews(String titulo, String lead, String contenido, 
-                               Long autorId, String que, String cuando, 
-                               String donde, String porQue, String como) {
-        Member autor = miembroService.getById(autorId)
+    @Transactional
+    public News createNews(NewsDTO dto) {
+        if (dto.getAuthorId() == null) {
+            throw new RuntimeException("El id del autor es obligatorio");
+        }
+
+        Member autor = miembroService.getById(dto.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
-        News noticia = new News(titulo, lead, autor);
-        noticia.setContenido(contenido);
-        noticia.setQue(que);
-        noticia.setCuando(cuando);
-        noticia.setDonde(donde);
-        noticia.setPorQue(porQue);
-        noticia.setComo(como);
+        News noticia = new News();
+        mapDtoToEntity(dto, noticia, autor);
+
+        if (noticia.getFechaPublicacion() == null) {
+            noticia.setFechaPublicacion(LocalDate.now());
+        }
 
         return noticiaRepository.save(noticia);
     }
 
-    // Obtener todas las noticias
+    @Transactional(readOnly = true)
     public List<News> getAll() {
         return noticiaRepository.findAll();
     }
 
-    // Obtener noticia por ID
+    @Transactional(readOnly = true)
     public News getById(Long id) {
         return noticiaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Noticia no encontrada"));
     }
 
-    // Obtener últimas noticias
+    @Transactional(readOnly = true)
     public List<News> getLatestNews() {
         return noticiaRepository.findTop10ByOrderByFechaPublicacionDesc();
     }
 
-    // Buscar noticias por título
+    @Transactional(readOnly = true)
     public List<News> searchByTitle(String titulo) {
         return noticiaRepository.findByTituloContainingIgnoreCase(titulo);
     }
 
-    // Buscar noticias por contenido
+    @Transactional(readOnly = true)
     public List<News> searchByContent(String texto) {
-        return noticiaRepository.findByLeadContainingIgnoreCase(texto);
+        return noticiaRepository.findByContenidoContainingIgnoreCase(texto);
     }
 
-    // Obtener noticias por fecha
+    @Transactional(readOnly = true)
     public List<News> getByDate(LocalDate fecha) {
         return noticiaRepository.findByFechaPublicacion(fecha);
     }
 
-    // Actualizar noticia
-    public News updateNews(Long noticiaId, News noticiaActualizada) {
+    @Transactional
+    public News updateNews(Long noticiaId, NewsDTO dto) {
         News noticia = getById(noticiaId);
-        
-        noticia.setTitulo(noticiaActualizada.getTitulo());
-        noticia.setLead(noticiaActualizada.getLead());
-        noticia.setContenido(noticiaActualizada.getContenido());
-        noticia.setQue(noticiaActualizada.getQue());
-        noticia.setCuando(noticiaActualizada.getCuando());
-        noticia.setDonde(noticiaActualizada.getDonde());
-        noticia.setPorQue(noticiaActualizada.getPorQue());
-        noticia.setComo(noticiaActualizada.getComo());
+
+        Member autor = noticia.getAutor();
+        if (dto.getAuthorId() != null && !dto.getAuthorId().equals(noticia.getAutor().getId())) {
+            autor = miembroService.getById(dto.getAuthorId())
+                    .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
+        }
+
+        mapDtoToEntity(dto, noticia, autor);
+
+        if (dto.getPublicationDate() == null && noticia.getFechaPublicacion() == null) {
+            noticia.setFechaPublicacion(LocalDate.now());
+        }
 
         return noticiaRepository.save(noticia);
     }
 
-    // Eliminar noticia
+    @Transactional
     public void deleteNews(Long noticiaId) {
         News noticia = getById(noticiaId);
         noticiaRepository.delete(noticia);
+    }
+
+    private void mapDtoToEntity(NewsDTO dto, News noticia, Member autor) {
+        noticia.setTitulo(dto.getTitle());
+        noticia.setLead(dto.getLead());
+        noticia.setContenido(dto.getContent());
+        noticia.setFechaPublicacion(dto.getPublicationDate() != null ? dto.getPublicationDate() : noticia.getFechaPublicacion());
+        noticia.setQue(dto.getWhat());
+        noticia.setCuando(dto.getWhen());
+        noticia.setDonde(dto.getWhere());
+        noticia.setPorQue(dto.getWhy());
+        noticia.setComo(dto.getHow());
+        noticia.setAutor(autor);
     }
 }

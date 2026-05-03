@@ -1,8 +1,10 @@
 package com.rotarywebsite.backend.controller;
 
+import com.rotarywebsite.backend.dto.MemberDTO;
 import com.rotarywebsite.backend.model.Member;
+import com.rotarywebsite.backend.model.MembershipStatus;
 import com.rotarywebsite.backend.service.MemberService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,89 +14,121 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/miembros")
-@CrossOrigin(origins = "*")
 public class MemberController {
 
-    @Autowired
-    private MemberService miembroService;
+    private final MemberService miembroService;
 
-    // Obtener todos los miembros
+    public MemberController(MemberService miembroService) {
+        this.miembroService = miembroService;
+    }
+
     @GetMapping
-    public ResponseEntity<List<Member>> obtenerTodos() {
-        List<Member> miembros = miembroService.getAll();
+    public ResponseEntity<List<MemberDTO>> obtenerTodos() {
+        List<MemberDTO> miembros = miembroService.getAll()
+                .stream()
+                .map(this::toDto)
+                .toList();
+
         return ResponseEntity.ok(miembros);
     }
 
-    // Obtener miembro por ID
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+        Optional<Member> miembroOpt = miembroService.getById(id);
+
+        if (miembroOpt.isPresent()) {
+            return ResponseEntity.ok(toDto(miembroOpt.get()));
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "Miembro no encontrado"));
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<List<MemberDTO>> buscarPorNombre(@RequestParam String nombre) {
+        List<MemberDTO> miembros = miembroService.searchByName(nombre)
+                .stream()
+                .map(this::toDto)
+                .toList();
+
+        return ResponseEntity.ok(miembros);
+    }
+
+    @GetMapping("/estado/{status}")
+    public ResponseEntity<?> obtenerPorEstado(@PathVariable String status) {
         try {
-            Optional<Member> miembro = miembroService.getById(id);
-            if (miembro.isPresent()) {
-                return ResponseEntity.ok(miembro.get());
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            MembershipStatus membershipStatus = MembershipStatus.valueOf(status.toUpperCase());
+
+            List<MemberDTO> miembros = miembroService.getByStatus(membershipStatus)
+                    .stream()
+                    .map(this::toDto)
+                    .toList();
+
+            return ResponseEntity.ok(miembros);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Estado de membresía inválido"));
         }
     }
 
-    // Buscar miembros por nombre
-    @GetMapping("/buscar")
-    public ResponseEntity<List<Member>> buscarPorNombre(@RequestParam String nombre) {
-        List<Member> miembros = miembroService.searchByName(nombre);
-        return ResponseEntity.ok(miembros);
-    }
-
-    // Renovar membresía
     @PutMapping("/{id}/renovar")
     public ResponseEntity<?> renovarMembresia(@PathVariable Long id) {
         try {
             Member miembro = miembroService.renewMembership(id);
-            return ResponseEntity.ok(miembro);
-        } catch (Exception e) {
+            return ResponseEntity.ok(toDto(miembro));
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Obtener miembros que necesitan renovación
     @GetMapping("/pendientes-renovacion")
-    public ResponseEntity<List<Member>> obtenerParaRenovacion() {
-        List<Member> miembros = miembroService.getPendingRenewal();
+    public ResponseEntity<List<MemberDTO>> obtenerParaRenovacion() {
+        List<MemberDTO> miembros = miembroService.getPendingRenewal()
+                .stream()
+                .map(this::toDto)
+                .toList();
+
         return ResponseEntity.ok(miembros);
     }
 
-    // Actualizar información de miembro
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarMiembro(@PathVariable Long id, @RequestBody Member miembroActualizado) {
+    public ResponseEntity<?> actualizarMiembro(@PathVariable Long id, @RequestBody MemberDTO dto) {
         try {
-            Optional<Member> miembroExistente = miembroService.getById(id);
-            if (miembroExistente.isPresent()) {
-                Member miembro = miembroExistente.get();
-                miembro.setNombre(miembroActualizado.getNombre());
-                miembro.setTelefono(miembroActualizado.getTelefono());
-                miembro.setOcupacion(miembroActualizado.getOcupacion());
-                miembro.setDireccion(miembroActualizado.getDireccion());
-                
-                // Aquí deberías llamar al servicio para guardar
-                return ResponseEntity.ok(miembro);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
+            Member miembro = miembroService.updateMember(id, dto);
+            return ResponseEntity.ok(toDto(miembro));
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Obtener estadísticas de miembros
     @GetMapping("/estadisticas")
     public ResponseEntity<Map<String, Long>> obtenerEstadisticas() {
         Map<String, Long> estadisticas = Map.of(
-            "activos", miembroService.countByStatus(com.rotarywebsite.backend.model.MembershipStatus.ACTIVE),
-            "pendientes", miembroService.countByStatus(com.rotarywebsite.backend.model.MembershipStatus.PENDING_RENEWAL),
-            "inactivos", miembroService.countByStatus(com.rotarywebsite.backend.model.MembershipStatus.INACTIVE)
+                "activos", miembroService.countByStatus(MembershipStatus.ACTIVE),
+                "pendientes", miembroService.countByStatus(MembershipStatus.PENDING_RENEWAL),
+                "inactivos", miembroService.countByStatus(MembershipStatus.INACTIVE),
+                "suspendidos", miembroService.countByStatus(MembershipStatus.SUSPENDED)
         );
+
         return ResponseEntity.ok(estadisticas);
+    }
+
+    private MemberDTO toDto(Member member) {
+        MemberDTO dto = new MemberDTO();
+        dto.setId(member.getId());
+        dto.setName(member.getNombre());
+        dto.setPhone(member.getTelefono());
+        dto.setOccupation(member.getOcupacion());
+        dto.setAddress(member.getDireccion());
+        dto.setMembershipStatus(member.getEstadoMembresia());
+        dto.setJoinDate(member.getFechaIngreso());
+        dto.setRenewalDate(member.getFechaRenovacion());
+
+        if (member.getUsuario() != null) {
+            dto.setUserId(member.getUsuario().getId());
+            dto.setEmail(member.getUsuario().getEmail());
+            dto.setActive(member.getUsuario().getActivo());
+        }
+
+        return dto;
     }
 }

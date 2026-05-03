@@ -18,11 +18,10 @@ public class EmailService {
             message.setSubject(subject);
             message.setText(text);
             message.setFrom("noreply@rotaryclub.com");
-            
+
             mailSender.send(message);
-            System.out.println("Email sent successfully to: " + to);
         } catch (Exception e) {
-            System.err.println("Error sending email: " + e.getMessage());
+            throw new RuntimeException("Error enviando email: " + e.getMessage(), e);
         }
     }
 

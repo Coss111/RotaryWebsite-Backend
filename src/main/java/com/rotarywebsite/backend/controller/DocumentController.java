@@ -1,8 +1,9 @@
 package com.rotarywebsite.backend.controller;
 
+import com.rotarywebsite.backend.dto.DocumentResponseDto;
 import com.rotarywebsite.backend.model.Document;
 import com.rotarywebsite.backend.service.DocumentService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,13 +13,14 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/documentos")
-@CrossOrigin(origins = "*")
 public class DocumentController {
 
-    @Autowired
-    private DocumentService documentoService;
+    private final DocumentService documentoService;
 
-    // Subir documento para proyecto
+    public DocumentController(DocumentService documentoService) {
+        this.documentoService = documentoService;
+    }
+
     @PostMapping("/proyecto/{proyectoId}")
     public ResponseEntity<?> subirDocumentoProyecto(
             @PathVariable Long proyectoId,
@@ -26,13 +28,16 @@ public class DocumentController {
             @RequestParam(value = "descripcion", required = false) String descripcion) {
         try {
             Document documento = documentoService.saveProjectDocument(archivo, proyectoId, descripcion);
-            return ResponseEntity.ok(documento);
-        } catch (Exception e) {
+            DocumentResponseDto response = toDto(documento);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno al subir documento"));
         }
     }
 
-    // Subir documento para noticia
     @PostMapping("/noticia/{noticiaId}")
     public ResponseEntity<?> subirDocumentoNoticia(
             @PathVariable Long noticiaId,
@@ -40,53 +45,91 @@ public class DocumentController {
             @RequestParam(value = "descripcion", required = false) String descripcion) {
         try {
             Document documento = documentoService.saveNewsDocument(archivo, noticiaId, descripcion);
-            return ResponseEntity.ok(documento);
+            DocumentResponseDto response = toDto(documento);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno al subir documento"));
+        }
+    }
+
+    @GetMapping("/proyecto/{proyectoId}")
+    public ResponseEntity<?> obtenerPorProyecto(@PathVariable Long proyectoId) {
+        try {
+            List<DocumentResponseDto> documentos = documentoService.getByProject(proyectoId)
+                    .stream()
+                    .map(this::toDto)
+                    .toList();
+
+            return ResponseEntity.ok(documentos);
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Obtener documentos por proyecto
-    @GetMapping("/proyecto/{proyectoId}")
-    public ResponseEntity<List<Document>> obtenerPorProyecto(@PathVariable Long proyectoId) {
-        try {
-            List<Document> documentos = documentoService.getByProject(proyectoId);
-            return ResponseEntity.ok(documentos);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    // Obtener documentos por noticia
     @GetMapping("/noticia/{noticiaId}")
-    public ResponseEntity<List<Document>> obtenerPorNoticia(@PathVariable Long noticiaId) {
+    public ResponseEntity<?> obtenerPorNoticia(@PathVariable Long noticiaId) {
         try {
-            List<Document> documentos = documentoService.getByNews(noticiaId);
+            List<DocumentResponseDto> documentos = documentoService.getByNews(noticiaId)
+                    .stream()
+                    .map(this::toDto)
+                    .toList();
+
             return ResponseEntity.ok(documentos);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Eliminar documento
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+        try {
+            Document documento = documentoService.getById(id);
+            return ResponseEntity.ok(toDto(documento));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/download-url")
+    public ResponseEntity<?> obtenerUrlDescarga(@PathVariable Long id) {
+        try {
+            String downloadUrl = documentoService.getDownloadUrl(id);
+            return ResponseEntity.ok(Map.of("downloadUrl", downloadUrl));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarDocumento(@PathVariable Long id) {
         try {
             documentoService.deleteDocument(id);
             return ResponseEntity.ok(Map.of("mensaje", "Documento eliminado exitosamente"));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Obtener documento por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+    private DocumentResponseDto toDto(Document documento) {
+        String downloadUrl;
         try {
-            Document documento = documentoService.getById(id);
-            return ResponseEntity.ok(documento);
+            downloadUrl = documentoService.getDownloadUrl(documento.getId());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            downloadUrl = null;
         }
+
+        return new DocumentResponseDto(
+                documento.getId(),
+                documento.getNombreArchivo(),
+                documento.getContentType(),
+                documento.getSizeBytes(),
+                documento.getFechaSubida(),
+                downloadUrl
+        );
     }
 }

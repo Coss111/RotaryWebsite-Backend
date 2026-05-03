@@ -1,36 +1,42 @@
 package com.rotarywebsite.backend.service;
 
-import org.springframework.transaction.annotation.Transactional;
+import com.rotarywebsite.backend.dto.MemberDTO;
 import com.rotarywebsite.backend.model.Member;
+import com.rotarywebsite.backend.model.MembershipStatus;
 import com.rotarywebsite.backend.model.User;
 import com.rotarywebsite.backend.model.UserRole;
-import com.rotarywebsite.backend.model.MembershipStatus;
 import com.rotarywebsite.backend.repository.MemberRepository;
 import com.rotarywebsite.backend.repository.UserRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class MemberService {
 
-    @Autowired
-    private MemberRepository memberRepository;
+    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public MemberService(MemberRepository memberRepository,
+                         UserRepository userRepository,
+                         PasswordEncoder passwordEncoder) {
+        this.memberRepository = memberRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Transactional
     public Member createMember(String name, String phone, String occupation, String email, String password) {
-        // 1. Create User first
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw new RuntimeException("El email ya está registrado");
+        }
+
         User user = new User();
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
@@ -39,53 +45,89 @@ public class MemberService {
         user.setFechaRegistro(LocalDateTime.now());
         user = userRepository.save(user);
 
-        // 2. Create Member linked to that User
         Member member = new Member();
         member.setNombre(name);
         member.setTelefono(phone);
         member.setOcupacion(occupation);
-        member.setUsuario(user); 
-        member.setFechaIngreso(LocalDate.now()); // Seteamos fechas iniciales
+        member.setUsuario(user);
+        member.setFechaIngreso(LocalDate.now());
         member.setFechaRenovacion(LocalDate.now().plusYears(1));
-        
+        member.setEstadoMembresia(MembershipStatus.ACTIVE);
+
         return memberRepository.save(member);
     }
 
+    @Transactional(readOnly = true)
     public List<Member> getAll() {
         return memberRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Member> getById(Long id) {
         return memberRepository.findById(id);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<Member> getByEmail(String email) {
+        return memberRepository.findByUsuarioEmail(email);
+    }
+
+    @Transactional(readOnly = true)
     public List<Member> searchByName(String name) {
         return memberRepository.findByNombreContainingIgnoreCase(name);
     }
 
+    @Transactional(readOnly = true)
     public List<Member> getByStatus(MembershipStatus status) {
         return memberRepository.findByEstadoMembresia(status);
     }
 
+    @Transactional
     public Member renewMembership(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
+
         member.setEstadoMembresia(MembershipStatus.ACTIVE);
         member.setFechaRenovacion(LocalDate.now().plusYears(1));
-        
-        // CORREGIDO: memberRepository (antes decía membrRepository)
+
         return memberRepository.save(member);
     }
 
+    @Transactional(readOnly = true)
     public List<Member> getPendingRenewal() {
-        LocalDate deadline = LocalDate.now().plusDays(30);
-        // CORREGIDO: memberRepository
-        return memberRepository.findByFechaRenovacionLessThan(deadline);
+        LocalDate today = LocalDate.now();
+        LocalDate deadline = today.plusDays(30);
+
+        return memberRepository.findByEstadoMembresiaAndFechaRenovacionBetween(
+                MembershipStatus.ACTIVE,
+                today,
+                deadline
+        );
     }
 
+    @Transactional(readOnly = true)
     public long countByStatus(MembershipStatus status) {
-        // CORREGIDO: memberRepository
         return memberRepository.countByEstadoMembresia(status);
+    }
+
+    @Transactional
+    public Member updateMember(Long memberId, MemberDTO dto) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
+
+        member.setNombre(dto.getName());
+        member.setTelefono(dto.getPhone());
+        member.setOcupacion(dto.getOccupation());
+        member.setDireccion(dto.getAddress());
+
+        if (dto.getMembershipStatus() != null) {
+            member.setEstadoMembresia(dto.getMembershipStatus());
+        }
+
+        if (dto.getRenewalDate() != null) {
+            member.setFechaRenovacion(dto.getRenewalDate());
+        }
+
+        return memberRepository.save(member);
     }
 }

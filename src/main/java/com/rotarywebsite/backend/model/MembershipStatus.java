@@ -1,9 +1,8 @@
 package com.rotarywebsite.backend.model;
 
-
 public enum MembershipStatus {
     ACTIVE,
-    PENDING_RENEWAL, 
+    PENDING_RENEWAL,
     INACTIVE,
     SUSPENDED
 }
