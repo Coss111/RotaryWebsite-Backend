@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // <-- ESTA LÍNEA ES MAGIA
                         .requestMatchers("/api/auth/**", "/error").permitAll()
                         .requestMatchers("/api/noticias/**").permitAll()
                         .requestMatchers("/api/projects/**").permitAll()
