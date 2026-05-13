@@ -11,6 +11,8 @@ import java.util.List;
 @Service
 public class DocumentService {
 
+    // Definimos las extensiones permitidas
+    private final List<String> ALLOWED_EXTENSIONS = List.of("pdf", "jpg", "jpeg", "png", "docx");
     private final DocumentRepository documentoRepository;
     private final FileStorageService fileStorageService;
     private final ProjectService proyectoService;
@@ -30,6 +32,7 @@ public class DocumentService {
 
     @Transactional
     public Document saveProjectDocument(MultipartFile archivo, Long proyectoId, String descripcion) {
+        validarArchivo(archivo);
         try {
             // Validar que el proyecto exista
             var proyecto = proyectoService.getById(proyectoId);
@@ -123,4 +126,28 @@ public class DocumentService {
         Document documento = getById(documentoId);
         return fileStorageService.getFileUrl(documento.getObjectName());
     }
+
+    private void validarArchivo(MultipartFile archivo) {
+    if (archivo.isEmpty()) {
+        throw new RuntimeException("No se puede subir un archivo vacío.");
+    }
+
+    String nombreArchivo = archivo.getOriginalFilename();
+    if (nombreArchivo == null || !nombreArchivo.contains(".")) {
+        throw new RuntimeException("Nombre de archivo inválido.");
+    }
+
+    // Extraer extensión
+    String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
+
+    if (!ALLOWED_EXTENSIONS.contains(extension)) {
+        throw new RuntimeException("Extensión de archivo no permitida: ." + extension + 
+                                   ". Solo se admiten: " + ALLOWED_EXTENSIONS);
+    }
+    
+    // Validación extra opcional: Tamaño (ej. 5MB)
+    if (archivo.getSize() > 5 * 1024 * 1024) {
+        throw new RuntimeException("El archivo excede el límite de 5MB.");
+    }
+}
 }
