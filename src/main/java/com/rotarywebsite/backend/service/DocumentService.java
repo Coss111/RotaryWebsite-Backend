@@ -11,8 +11,9 @@ import java.util.List;
 @Service
 public class DocumentService {
 
-    // Definimos las extensiones permitidas
+    // Mantiene tu lista de extensiones permitidas para blindar la subida de archivos
     private final List<String> ALLOWED_EXTENSIONS = List.of("pdf", "jpg", "jpeg", "png", "docx");
+    
     private final DocumentRepository documentoRepository;
     private final FileStorageService fileStorageService;
     private final ProjectService proyectoService;
@@ -128,26 +129,26 @@ public class DocumentService {
     }
 
     private void validarArchivo(MultipartFile archivo) {
-    if (archivo.isEmpty()) {
-        throw new RuntimeException("No se puede subir un archivo vacío.");
-    }
+        if (archivo.isEmpty()) {
+            throw new RuntimeException("No se puede subir un archivo vacío.");
+        }
 
-    String nombreArchivo = archivo.getOriginalFilename();
-    if (nombreArchivo == null || !nombreArchivo.contains(".")) {
-        throw new RuntimeException("Nombre de archivo inválido.");
-    }
+        String nombreArchivo = archivo.getOriginalFilename();
+        if (nombreArchivo == null || !nombreArchivo.contains(".")) {
+            throw new RuntimeException("Nombre de archivo inválido.");
+        }
 
-    // Extraer extensión
-    String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
+        // Extraer extensión
+        String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
 
-    if (!ALLOWED_EXTENSIONS.contains(extension)) {
-        throw new RuntimeException("Extensión de archivo no permitida: ." + extension + 
-                                   ". Solo se admiten: " + ALLOWED_EXTENSIONS);
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new RuntimeException("Extensión de archivo no permitida: ." + extension + 
+                                       ". Solo se admiten: " + ALLOWED_EXTENSIONS);
+        }
+        
+        // Validación extra opcional: Tamaño (ej. 5MB)
+        if (archivo.getSize() > 5 * 1024 * 1024) {
+            throw new RuntimeException("El archivo excede el límite de 5MB.");
+        }
     }
-    
-    // Validación extra opcional: Tamaño (ej. 5MB)
-    if (archivo.getSize() > 5 * 1024 * 1024) {
-        throw new RuntimeException("El archivo excede el límite de 5MB.");
-    }
-}
 }

@@ -30,11 +30,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        
+        // Mantiene tu solución para evitar que las peticiones OPTIONS fallen por falta de JWT
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
             return;
         }
-
 
         final String authHeader = request.getHeader("Authorization");
         final String jwt;

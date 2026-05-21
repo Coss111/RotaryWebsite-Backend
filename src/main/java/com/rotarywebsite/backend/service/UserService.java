@@ -76,4 +76,36 @@ public class UserService {
     public List<User> getActiveUsers() {
         return usuarioRepository.findByActivoTrue();
     }
+
+    // Mantiene el método nuevo de José para habilitar la edición de perfiles en el frontend
+    @Transactional
+    public User updateUser(Long userId, String email, String password, UserRole role, Boolean active) {
+        User usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (email != null && !email.isBlank()) {
+            String normalizedEmail = email.trim().toLowerCase();
+
+            if (!normalizedEmail.equalsIgnoreCase(usuario.getEmail())
+                    && usuarioRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+                throw new RuntimeException("El email ya está registrado");
+            }
+
+            usuario.setEmail(normalizedEmail);
+        }
+
+        if (password != null && !password.isBlank()) {
+            usuario.setPassword(passwordEncoder.encode(password));
+        }
+
+        if (role != null) {
+            usuario.setRol(role);
+        }
+
+        if (active != null) {
+            usuario.setActivo(active);
+        }
+
+        return usuarioRepository.save(usuario);
+    }
 }

@@ -37,10 +37,11 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.customUserDetailsService = customUserDetailsService;
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Activamos CORS con una configuración interna
+            // 1. Activamos CORS con la configuración interna robusta tuya
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -51,22 +52,34 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            // 3. Agregamos el manejo de excepciones de José para retornar JSON en vez de HTML feo
+            .exceptionHandling(exceptions -> exceptions
+                    .authenticationEntryPoint((request, response, authException) -> {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"error\":\"No autorizado\"}");
+                    })
+            );
 
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .toList();
+
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Permitir el origen de Vercel y localhost
+        // Permitir el origen de Vercel, localhost y Ngrok de forma flexible
         configuration.setAllowedOriginPatterns(List.of("*")); 
         
-        // Permitir todos los métodos
+        // Permitir todos los métodos necesarios
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         
-        // PERMITIR TODOS LOS HEADERS (Esto arregla el error de custom-header)
+        // Permitir todos los headers para evitar caídas por custom-headers
         configuration.setAllowedHeaders(List.of("*")); 
         
         configuration.setAllowCredentials(true);

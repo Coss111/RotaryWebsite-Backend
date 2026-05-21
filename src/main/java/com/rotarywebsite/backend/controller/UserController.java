@@ -1,9 +1,14 @@
 package com.rotarywebsite.backend.controller;
 
+import com.rotarywebsite.backend.dto.MemberDTO;
 import com.rotarywebsite.backend.dto.UserDTO;
+import com.rotarywebsite.backend.dto.UserUpsertRequest;
 import com.rotarywebsite.backend.dto.UserStatusUpdateRequest;
+import com.rotarywebsite.backend.model.Member;
 import com.rotarywebsite.backend.model.User;
 import com.rotarywebsite.backend.model.UserRole;
+import com.rotarywebsite.backend.repository.MemberRepository;
+import com.rotarywebsite.backend.service.MemberService;
 import com.rotarywebsite.backend.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +23,15 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
+    private final MemberService memberService;
+    private final MemberRepository memberRepository;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService,
+                          MemberService memberService,
+                          MemberRepository memberRepository) {
         this.userService = userService;
+        this.memberService = memberService;
+        this.memberRepository = memberRepository;
     }
 
     @GetMapping({"", "/all"})
@@ -83,6 +94,103 @@ public class UserController {
         }
     }
 
+    @PostMapping
+    public ResponseEntity<?> createUser(@RequestBody UserUpsertRequest request) {
+        try {
+            if (request.getRole() == null || request.getRole() == UserRole.PUBLIC) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El rol es obligatorio"));
+            }
+
+            User user;
+            if (request.getRole() == UserRole.MEMBER) {
+                if (isBlank(request.getName()) || isBlank(request.getPassword()) || isBlank(request.getEmail())) {
+                    return ResponseEntity.badRequest()
+                            .body(Map.of("error", "Nombre, email y contraseña son obligatorios para miembros"));
+                }
+
+                Member member = memberService.createMember(
+                        request.getName(),
+                        request.getPhone(),
+                        request.getOccupation(),
+                        request.getEmail(),
+                        request.getPassword()
+                );
+
+                if (!isBlank(request.getAddress())) {
+                    MemberDTO memberDTO = new MemberDTO();
+                    memberDTO.setName(member.getNombre());
+                    memberDTO.setPhone(member.getTelefono());
+                    memberDTO.setOccupation(member.getOcupacion());
+                    memberDTO.setAddress(request.getAddress());
+                    memberDTO.setEmail(member.getUsuario().getEmail());
+                    member = memberService.updateMember(member.getId(), memberDTO);
+                }
+
+                user = member.getUsuario();
+            } else {
+                if (isBlank(request.getPassword()) || isBlank(request.getEmail())) {
+                    return ResponseEntity.badRequest()
+                            .body(Map.of("error", "Email y contraseña son obligatorios"));
+                }
+
+                user = userService.createUser(request.getEmail(), request.getPassword(), request.getRole());
+                if (request.getActive() != null && !request.getActive()) {
+                    user = userService.changeStatus(user.getId(), false);
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(toDto(user));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserUpsertRequest request) {
+        try {
+            User existingUser = userService.getById(id)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            Member member = memberRepository.findByUsuarioId(id).orElse(null);
+
+            if (request.getRole() == UserRole.PUBLIC) {
+                return ResponseEntity.badRequest().body(Map.of("error", "No se permite asignar el rol PUBLIC"));
+            }
+
+            if (member != null && request.getRole() != null && request.getRole() != UserRole.MEMBER) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Un usuario con perfil de miembro no puede cambiarse a administrador desde esta pantalla"));
+            }
+
+            if (member == null && request.getRole() == UserRole.MEMBER) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Para convertir un usuario en miembro se requiere crear un perfil de miembro"));
+            }
+
+            User updatedUser = userService.updateUser(
+                    id,
+                    request.getEmail(),
+                    request.getPassword(),
+                    request.getRole(),
+                    request.getActive()
+            );
+
+            if (member != null) {
+                MemberDTO memberDTO = new MemberDTO();
+                memberDTO.setName(!isBlank(request.getName()) ? request.getName() : member.getNombre());
+                memberDTO.setPhone(request.getPhone() != null ? request.getPhone() : member.getTelefono());
+                memberDTO.setOccupation(request.getOccupation() != null ? request.getOccupation() : member.getOcupacion());
+                memberDTO.setAddress(request.getAddress() != null ? request.getAddress() : member.getDireccion());
+                memberDTO.setEmail(updatedUser.getEmail());
+                memberService.updateMember(member.getId(), memberDTO);
+            }
+
+            return ResponseEntity.ok(toDto(updatedUser));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PutMapping("/{id}/status")
     public ResponseEntity<?> changeUserStatus(@PathVariable Long id,
                                               @RequestBody UserStatusUpdateRequest request) {
@@ -108,5 +216,9 @@ public class UserController {
         dto.setRegistrationDate(user.getFechaRegistro());
         dto.setLastLogin(user.getUltimoLogin());
         return dto;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

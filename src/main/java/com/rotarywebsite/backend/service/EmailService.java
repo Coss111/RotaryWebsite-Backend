@@ -1,5 +1,6 @@
 package com.rotarywebsite.backend.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -11,13 +12,18 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Value("${app.mail.from:${spring.mail.username}}")
+    private String fromAddress;
+
     public void sendSimpleMessage(String to, String subject, String text) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(to);
             message.setSubject(subject);
             message.setText(text);
-            message.setFrom("noreply@rotaryclub.com");
+            
+            // Mantiene el remitente dinámico de José para evitar bloqueos del servidor SMTP
+            message.setFrom(fromAddress);
 
             mailSender.send(message);
         } catch (Exception e) {

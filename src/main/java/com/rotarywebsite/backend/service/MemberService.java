@@ -120,6 +120,20 @@ public class MemberService {
         member.setOcupacion(dto.getOccupation());
         member.setDireccion(dto.getAddress());
 
+        // Mantiene la actualización segura del correo electrónico de la cuenta asociada
+        if (dto.getEmail() != null && member.getUsuario() != null) {
+            String normalizedEmail = dto.getEmail().trim().toLowerCase();
+            User currentUser = member.getUsuario();
+
+            if (!normalizedEmail.equalsIgnoreCase(currentUser.getEmail())
+                    && userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+                throw new RuntimeException("El email ya está registrado");
+            }
+
+            currentUser.setEmail(normalizedEmail);
+            userRepository.save(currentUser);
+        }
+
         if (dto.getMembershipStatus() != null) {
             member.setEstadoMembresia(dto.getMembershipStatus());
         }
