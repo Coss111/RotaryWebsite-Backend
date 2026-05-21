@@ -20,7 +20,6 @@ import org.springframework.web.cors.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -41,45 +40,45 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Activamos CORS con la configuración interna robusta tuya
+            // 1. Activamos CORS con tu configuración interna ganadora
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // 2. Permitir OPTIONS para todas las rutas (esto mata el error de Vercel)
+                // 2. Permitir OPTIONS para todas las rutas (mata el error de Vercel)
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/auth/**", "/api/noticias/**", "/api/projects/**", "/error").permitAll()
+                
+                // 🚀 CORRECCIÓN AQUÍ: Agregamos las rutas de consulta de documentos al acceso público
+                .requestMatchers(
+                    "/api/auth/**", 
+                    "/api/noticias/**", 
+                    "/api/projects/**", 
+                    "/api/documentos/proyecto/**", 
+                    "/api/documentos/noticia/**", 
+                    "/api/documentos/**", // Esto ya cubre las descargas y cualquier subruta de forma legal
+                    "/error"
+                ).permitAll()
+                
+                // Cualquier otra ruta (como crear, editar o borrar usuarios/miembros) requerirá token
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            // 3. Agregamos el manejo de excepciones de José para retornar JSON en vez de HTML feo
-            .exceptionHandling(exceptions -> exceptions
-                    .authenticationEntryPoint((request, response, authException) -> {
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.setContentType("application/json");
-                        response.getWriter().write("{\"error\":\"No autorizado\"}");
-                    })
-            );
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .toList();
-
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Permitir el origen de Vercel, localhost y Ngrok de forma flexible
+        // RESTAURADO: Tu patrón flexible original que soluciona los saltos de Vercel/Ngrok
         configuration.setAllowedOriginPatterns(List.of("*")); 
         
-        // Permitir todos los métodos necesarios
+        // Permitir todos los métodos
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         
-        // Permitir todos los headers para evitar caídas por custom-headers
+        // PERMITIR TODOS LOS HEADERS (Esto arregla el error de custom-header)
         configuration.setAllowedHeaders(List.of("*")); 
         
         configuration.setAllowCredentials(true);

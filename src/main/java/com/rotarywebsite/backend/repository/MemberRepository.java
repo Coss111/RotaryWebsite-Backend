@@ -42,8 +42,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     long countByEstadoMembresia(MembershipStatus estado);
 
-    @EntityGraph(attributePaths = {"usuario"})
-    List<Member> findByEstadoMembresiaAndUsuarioActivoTrue(MembershipStatus estado);
-
     boolean existsByUsuarioEmail(String email);
 }
