@@ -53,6 +53,7 @@ public class SecurityConfig {
                     "/api/auth/**", 
                     "/api/noticias/**", 
                     "/api/projects/**", 
+                    "/api/miembros/**", 
                     "/api/documentos/proyecto/**", 
                     "/api/documentos/noticia/**", 
                     "/api/documentos/**", // Esto ya cubre las descargas y cualquier subruta de forma legal
